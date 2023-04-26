@@ -2,7 +2,7 @@ import pandas as pd
 
 
 def age_average_fill_na(data: pd.DataFrame) -> None:
-    '''
+    """
     Replaces na values in the age column with the average age of all users.
 
     Created By:
@@ -10,8 +10,8 @@ def age_average_fill_na(data: pd.DataFrame) -> None:
 
     Parameters:
         data(dataframe): Merged(user, book, rating) dataframe.
-    '''
+    """
 
-    data['age'] = data['age'].fillna(data['age'].mean())
+    data["age"] = data["age"].fillna(data["age"].mean())
 
     return
