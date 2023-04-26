@@ -4,6 +4,20 @@
         "code": "code"
     },
 
+    "choose_columns": [
+        "user_id",
+        "isbn",
+        "rating",
+        "location",
+        "age",
+        "book_title",
+        "book_author",
+        "year_of_publication",
+        "publisher",
+        "img_url",
+        "img_path"
+    ],
+
     "model": {
         "name": "MLP"
     }
