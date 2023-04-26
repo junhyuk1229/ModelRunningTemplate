@@ -3,10 +3,21 @@ import os
 import pandas as pd
 
 
+# Setting file name
 SETTING_FILE = "setting.json"
 
 
-def get_setting(folder_path):
+def get_setting(folder_path: str) -> dict:
+    '''
+    Returns the setting.json file as a dictionary.
+
+    Parameters:
+        folder_path(str): The path to the json file.
+
+    Returns:
+        settings(dict): Dictionary containing the settings.
+    '''
+
     with open(os.path.join(folder_path, SETTING_FILE)) as f:
         try:
             settings = json.load(f)
@@ -18,9 +29,20 @@ def get_setting(folder_path):
     return settings
 
 
-def get_raw_data(data_path):
+def get_unprocessed_data(data_path: str) -> dict:
+    '''
+    Gets unprocessed data as dataframe and returns it in a dictionary.
+
+    Parameters:
+        data_path(str): The path to the data folder.
+
+    Returns:
+        data(dict): Dictionary containing the unprocessed dataframes.
+    '''
+
     data = dict()
 
+    # Read csv files
     data['book_data'] = pd.read_csv(os.path.join(data_path, 'books.csv'))
     data['user_data'] = pd.read_csv(os.path.join(data_path, 'users.csv'))
     data['test_ratings'] = pd.read_csv(os.path.join(data_path, 'test_ratings.csv'))
@@ -30,24 +52,36 @@ def get_raw_data(data_path):
     return data
 
 
-def setup():
+def setup() -> tuple[dict, dict]:
+    '''
+    Returns setting and unprocessed data.
+
+    Returns:
+        data(dict): Dictionary containing the unprocessed dataframes.
+        settings(dict): Dictionary containing the settings.
+    '''
+
+    # Changes directory to parent directory
     os.chdir('..')
     folder_path = os.getcwd()
 
     print("Getting Settings...")
 
+    # Import settings
     settings = get_setting(folder_path)
 
     print("Loaded Settings!")
     print()
     
+    # Data path to data file
     data_path = os.path.join(folder_path, settings["path"]["data"])
 
-    print("Getting Raw Data...")
+    print("Getting Unprocessed Data...")
 
-    data = get_raw_data(data_path)
+    # Import data
+    data = get_unprocessed_data(data_path)
     
-    print("Got Raw Data!")
+    print("Got Unprocessed Data!")
     print()
 
     return data, settings
