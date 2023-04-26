@@ -19,16 +19,18 @@ def get_setting(folder_path):
 
 
 def get_raw_data(data_path):
-
     data = dict()
 
     data['book_data'] = pd.read_csv(os.path.join(data_path, 'books.csv'))
     data['user_data'] = pd.read_csv(os.path.join(data_path, 'users.csv'))
+    data['test_ratings'] = pd.read_csv(os.path.join(data_path, 'test_ratings.csv'))
+    data['train_ratings'] = pd.read_csv(os.path.join(data_path, 'train_ratings.csv'))
+    data['sample_submission'] = pd.read_csv(os.path.join(data_path, 'sample_submission.csv'))
 
     return data
 
 
-def setup_main():
+def setup():
     os.chdir('..')
     folder_path = os.getcwd()
 
