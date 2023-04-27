@@ -1,5 +1,5 @@
 from src.setup import setup
-from src.data_process import process_data
+from src.data_process import process_data, data_split, load_datasets
 
 
 def main() -> None:
@@ -8,6 +8,14 @@ def main() -> None:
 
     # Process raw data
     process_data(data, settings)
+
+    # Split data
+    data_split(data, settings)
+
+    # Load datasets
+    dataset = load_datasets(data, settings)
+
+    print(dataset)
 
     return
 

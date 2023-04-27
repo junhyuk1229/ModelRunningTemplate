@@ -1,1 +1,2 @@
-from .process import process_data
+from .process import *
+from .split import *

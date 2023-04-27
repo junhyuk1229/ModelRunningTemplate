@@ -8,15 +8,16 @@
         "user_id",
         "isbn",
         "rating",
-        "location",
         "age",
-        "book_title",
-        "book_author",
-        "year_of_publication",
-        "publisher",
-        "img_url",
-        "img_path"
+        "year_of_publication"
     ],
+
+    "index_columns": [
+        "user_id",
+        "isbn"
+    ],
+
+    "predict_column": "rating",
 
     "model": {
         "name": "MLP"
