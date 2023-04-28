@@ -5,6 +5,7 @@ from src.data_process import (
     create_datasets,
     create_dataloader,
 )
+from src.get_model import create_model
 
 
 def main() -> None:
@@ -22,6 +23,12 @@ def main() -> None:
 
     # Create dataloader
     dataloader = create_dataloader(dataset)
+
+    # Create model
+    model = create_model(settings)
+
+    # Train model
+    print(model)
 
     return
 
