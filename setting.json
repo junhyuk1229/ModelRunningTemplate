@@ -21,5 +21,9 @@
 
     "model": {
         "name": "MLP"
+    },
+
+    "train":    {
+        "epoch": 10
     }
 }

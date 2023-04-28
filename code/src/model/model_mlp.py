@@ -6,9 +6,8 @@ class MultiLayerPerceptronClass(nn.Module):
     """
         Multilayer Perceptron (MLP) Class
     """
-    def __init__(self,name='mlp',xdim=784,hdim=256,ydim=10):
+    def __init__(self, xdim=784, hdim=256, ydim=10):
         super(MultiLayerPerceptronClass,self).__init__()
-        self.name = name
         self.xdim = xdim
         self.hdim = hdim
         self.ydim = ydim

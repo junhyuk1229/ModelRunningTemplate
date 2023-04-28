@@ -52,16 +52,16 @@ def create_datasets(data: dict, settings: dict) -> dict:
     dataset = dict()
 
     train_dataset = TensorDataset(
-        torch.LongTensor(data["X_train"].values),
-        torch.LongTensor(data["y_train"].values),
+        torch.FloatTensor(data["X_train"].values),
+        torch.FloatTensor(data["y_train"].values),
     )
 
     valid_dataset = TensorDataset(
-        torch.LongTensor(data["X_valid"].values),
-        torch.LongTensor(data["y_valid"].values),
+        torch.FloatTensor(data["X_valid"].values),
+        torch.FloatTensor(data["y_valid"].values),
     )
 
-    test_dataset = TensorDataset(torch.LongTensor(data["test_ratings"].values))
+    test_dataset = TensorDataset(torch.FloatTensor(data["test_ratings"].values))
 
     dataset["train_dataset"] = train_dataset
     dataset["valid_dataset"] = valid_dataset
