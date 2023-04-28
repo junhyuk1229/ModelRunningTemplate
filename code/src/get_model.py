@@ -11,7 +11,6 @@ def create_model(settings: dict):
     Returns:
         model(nn.Module): Model based on settings.
     """
-
     print("Creating Model...")
 
     if settings["model"]["name"].upper() == "MLP":
