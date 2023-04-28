@@ -37,14 +37,14 @@ def data_split(data: dict, settings: dict) -> None:
 
 def create_datasets(data: dict, settings: dict) -> dict:
     """
-    Splits train data to train data and validation data.
+    Creates datasets using the merged train, valid, test data.
 
     Parameters:
         data(dict): Dictionary containing the unprocessed dataframes.
         settings(dict): Dictionary containing the settings.
 
     Returns:
-        dataset_dict(dict): Dictionary loaded datasets.
+        dataset(dict): Dictionary loaded datasets.
     """
 
     print("Creating Datasets!")
@@ -74,6 +74,15 @@ def create_datasets(data: dict, settings: dict) -> dict:
 
 
 def create_dataloader(dataset: dict):
+    """
+    Creates dataloader from datasets.
+
+    Parameters:
+        dataset(dict): Dictionary containing datasets.
+
+    Returns:
+        dataloader(dict): Dictionary loaded datasets.
+    """
 
     print("Creating Dataloader...")
 
