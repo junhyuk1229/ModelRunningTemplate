@@ -6,7 +6,7 @@ from src.data_process import (
     create_dataloader,
 )
 from src.get_model import create_model
-from src.train_model import train_model
+from src.train_model import run_model
 
 
 def main() -> None:
@@ -29,7 +29,7 @@ def main() -> None:
     model = create_model(settings)
 
     # Train model
-    train_model(dataloader, settings, model)
+    run_model(dataloader, settings, model)
 
     return
 

@@ -15,7 +15,7 @@ class RMSELoss(nn.Module):
         return loss
 
 
-def train_model(dataloader: dict, settings: dict, model) -> None:
+def run_model(dataloader: dict, settings: dict, model) -> None:
     """
     Trains model.
 
@@ -38,6 +38,23 @@ def train_model(dataloader: dict, settings: dict, model) -> None:
     print("Training Model...")
     print()
 
+    train_model(dataloader, settings, model, loss_fn, optimizer)
+
+    print("Trained Model!")
+    print()
+
+    return
+
+
+def train_model(dataloader: dict, settings: dict, model, loss_fn, optimizer) -> None:
+    """
+    Trains model.
+
+    Parameters:
+        dataloader(dict): Dictionary containing the dictionary.
+        settings(dict): Dictionary containing the settings.
+        model(nn.Module): Model used to train
+    """
     # Set epoch for training
     for epoch in range(settings["run_model"]["epoch"]):
         # Change model state to train
@@ -75,9 +92,6 @@ def train_model(dataloader: dict, settings: dict, model) -> None:
         # Print average loss
         average_loss = total_loss / batch_count
         print(f"epoch: {epoch + 1}\tloss: {average_loss.item()}")
-    print()
-
-    print("Trained Model!")
     print()
 
     return
