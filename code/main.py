@@ -6,7 +6,7 @@ from src.data_process import (
     create_dataloader,
 )
 from src.get_model import create_model
-from src.train_model import run_model
+from src.run_model import run_model
 
 
 def main() -> None:
