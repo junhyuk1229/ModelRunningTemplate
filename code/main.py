@@ -1,5 +1,5 @@
 from src.setup import setup
-from src.data_process import process_data, data_split, load_datasets
+from src.data_process import process_data, data_split, create_datasets, create_dataloader
 
 
 def main() -> None:
@@ -13,9 +13,10 @@ def main() -> None:
     data_split(data, settings)
 
     # Load datasets
-    dataset = load_datasets(data, settings)
+    dataset = create_datasets(data, settings)
 
-    print(dataset)
+    # Create dataloader
+    dataloader = create_dataloader(dataset)
 
     return
 

@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import torch
-from torch.utils.data import TensorDataset, DataLoader, Dataset
+from torch.utils.data import TensorDataset, DataLoader
 
 
 def data_split(data: dict, settings: dict) -> None:
@@ -35,7 +35,7 @@ def data_split(data: dict, settings: dict) -> None:
     return
 
 
-def load_datasets(data: dict, settings: dict) -> dict:
+def create_datasets(data: dict, settings: dict) -> dict:
     """
     Splits train data to train data and validation data.
 
@@ -47,7 +47,7 @@ def load_datasets(data: dict, settings: dict) -> dict:
         dataset_dict(dict): Dictionary loaded datasets.
     """
 
-    print("Loading Datasets!")
+    print("Creating Datasets!")
 
     dataset = dict()
 
@@ -67,7 +67,35 @@ def load_datasets(data: dict, settings: dict) -> dict:
     dataset["valid_dataset"] = valid_dataset
     dataset["test_dataset"] = test_dataset
 
-    print("Loaded Datasets!")
+    print("Created Datasets!")
     print()
 
     return dataset
+
+
+def create_dataloader(dataset: dict):
+
+    print("Creating Dataloader...")
+
+    dataloader = dict()
+
+    train_dataloader = DataLoader(
+        dataset["train_dataset"], batch_size=32, shuffle=True
+    )
+
+    valid_dataloader = DataLoader(
+        dataset["valid_dataset"], batch_size=32, shuffle=True
+    )
+
+    test_dataloader = DataLoader(
+        dataset["test_dataset"], batch_size=32, shuffle=False
+    )
+
+    dataloader["train_dataloader"] = train_dataloader
+    dataloader["valid_dataloader"] = valid_dataloader
+    dataloader["test_dataloader"] = test_dataloader
+
+    print("Created Dataloader!")
+    print()
+
+    return dataloader
