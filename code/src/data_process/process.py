@@ -97,6 +97,7 @@ def process_data(data: dict, settings: dict) -> None:
     data["test_ratings"] = data["test_ratings"][settings["choose_columns"]]
     data["sample_submission"] = data["sample_submission"][settings["choose_columns"]]
 
+    # Drop predicting column
     data["test_ratings"] = data["test_ratings"].drop(
         columns=[settings["predict_column"]]
     )

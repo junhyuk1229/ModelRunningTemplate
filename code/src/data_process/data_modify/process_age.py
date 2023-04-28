@@ -12,6 +12,7 @@ def age_average_fill_na(data: pd.DataFrame) -> None:
         data(dataframe): Merged(user, book, rating) dataframe.
     """
 
+    # Fill NaN ages in total average
     data["age"] = data["age"].fillna(data["age"].mean())
 
     return
