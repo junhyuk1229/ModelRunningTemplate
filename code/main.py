@@ -1,5 +1,10 @@
 from src.setup import setup
-from src.data_process import process_data, data_split, create_datasets, create_dataloader
+from src.data_process import (
+    process_data,
+    data_split,
+    create_datasets,
+    create_dataloader,
+)
 
 
 def main() -> None:

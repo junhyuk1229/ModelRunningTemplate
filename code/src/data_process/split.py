@@ -88,17 +88,11 @@ def create_dataloader(dataset: dict):
 
     dataloader = dict()
 
-    train_dataloader = DataLoader(
-        dataset["train_dataset"], batch_size=32, shuffle=True
-    )
+    train_dataloader = DataLoader(dataset["train_dataset"], batch_size=32, shuffle=True)
 
-    valid_dataloader = DataLoader(
-        dataset["valid_dataset"], batch_size=32, shuffle=True
-    )
+    valid_dataloader = DataLoader(dataset["valid_dataset"], batch_size=32, shuffle=True)
 
-    test_dataloader = DataLoader(
-        dataset["test_dataset"], batch_size=32, shuffle=False
-    )
+    test_dataloader = DataLoader(dataset["test_dataset"], batch_size=32, shuffle=False)
 
     dataloader["train_dataloader"] = train_dataloader
     dataloader["valid_dataloader"] = valid_dataloader
