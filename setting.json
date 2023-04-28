@@ -19,11 +19,11 @@
 
     "predict_column": "rating",
 
-    "model": {
+    "choose_model": {
         "name": "MLP"
     },
 
-    "train":    {
+    "run_model":    {
         "loss_fn": "RMSE",
         "optimizer": "ADAM",
         "epoch": 10,
