@@ -26,14 +26,20 @@ def train_model(dataloader: dict, settings: dict, model) -> None:
     """
 
     # Set loss function
-    loss_fn = RMSELoss()
+    if settings["run_model"]["loss_fn"].lower() == "rmse":
+        loss_fn = RMSELoss()
+    elif settings["run_model"]["loss_fn"].lower() == "mse":
+        loss_fn = MSELoss()
+
     # Set optimizer
-    optimizer = Adam(model.parameters(), lr=0.001)
+    if settings["run_model"]["optimizer"].lower() == "adam":
+        optimizer = Adam(model.parameters(), lr=settings["run_model"]["learn_rate"])
 
     print("Training Model...")
+    print()
 
     # Set epoch for training
-    for epoch in range(settings["train"]["epoch"]):
+    for epoch in range(settings["run_model"]["epoch"]):
         # Change model state to train
         model.train()
 

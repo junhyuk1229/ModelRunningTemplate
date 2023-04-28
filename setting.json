@@ -24,6 +24,9 @@
     },
 
     "train":    {
-        "epoch": 10
+        "loss_fn": "RMSE",
+        "optimizer": "ADAM",
+        "epoch": 10,
+        "learn_rate": 0.001
     }
 }

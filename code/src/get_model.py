@@ -13,7 +13,7 @@ def create_model(settings: dict):
     """
     print("Creating Model...")
 
-    if settings["model"]["name"].upper() == "MLP":
+    if settings["choose_model"]["name"].upper() == "MLP":
         model = MultiLayerPerceptronClass(xdim=4, hdim=2, ydim=1)
 
     print("Created Model!")
