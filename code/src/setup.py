@@ -122,16 +122,30 @@ class SaveSetting:
         return
 
     def save_model(self, model) -> None:
+        """
+        Saves model.
+        """
         temp_path = os.path.join(self.model_folder_path, self.name)
         temp_path += f"_model"
         torch.save(model, temp_path)
 
         return
 
-    def save_statedict(self, model) -> None:
+    def save_statedict(self, model, train, valid, settings) -> None:
+        """
+        Saves model's state dict and extra information
+        """
         temp_path = os.path.join(self.statedict_folder_path, self.name)
         temp_path += f"_statedict"
-        torch.save(model.state_dict(), temp_path)
+        torch.save(
+            {
+                "state_dict": model.state_dict(),
+                "train": train,
+                "valid": valid,
+                "settings": settings,
+            },
+            temp_path,
+        )
 
         return
 

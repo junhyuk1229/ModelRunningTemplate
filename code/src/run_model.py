@@ -66,8 +66,15 @@ def run_model(dataloader: dict, settings: dict, model, save_settings) -> None:
     print("Trained Model!")
     print()
 
+    print("Saving Model/State Dict...")
+
     save_settings.save_model(model)
-    save_settings.save_statedict(model)
+    save_settings.save_statedict(
+        model, valid_average_loss, train_average_loss, settings
+    )
+
+    print("Saved Model/State Dict!")
+    print()
 
     print("Predicting Results...")
 
