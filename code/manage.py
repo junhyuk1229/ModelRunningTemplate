@@ -15,24 +15,29 @@ def main() -> None:
     statedict_path = os.path.join(folder_path, settings["path"]["state_dict"])
     submit_path = os.path.join(folder_path, settings["path"]["submit"])
 
-    print("Enter your command: ", end="")
-
-    input_str = sys.stdin.readline().rstrip()
-
-    if input_str == "clear":
-        print("Are you sure?(y/n): ")
+    while True:
+        print("Enter your command: ", end="")
 
         input_str = sys.stdin.readline().rstrip()
 
-        if input_str.lower() == "y":
-            shutil.rmtree(log_path)
-            shutil.rmtree(model_path)
-            shutil.rmtree(statedict_path)
-            shutil.rmtree(submit_path)
+        if input_str == "clear":
+            print("Are you sure?(y/n): ")
+
+            input_str = sys.stdin.readline().rstrip()
+
+            if input_str.lower() == "y":
+                shutil.rmtree(log_path)
+                shutil.rmtree(model_path)
+                shutil.rmtree(statedict_path)
+                shutil.rmtree(submit_path)
+            else:
+                continue
+        elif input_str == "exit":
+            print("Exiting...\n")
+            break
         else:
-            return
-    else:
-        print("Unrecognised command...\nExiting...\n")
+            print("Unrecognised command...\nExiting...\n")
+            break
 
     return
 
