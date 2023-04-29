@@ -1,5 +1,5 @@
 import pandas as pd
-from .data_modify import age_average_fill_na
+from .data_modify import age_average_fill_na, average_fill_na
 
 
 def index_data(data: dict, settings: dict) -> None:
@@ -45,7 +45,7 @@ def process_mlp(data: dict) -> None:
         data(dict): Dictionary containing the unprocessed dataframes.
     """
 
-    age_average_fill_na(data["user_data"])
+    average_fill_na(data["user_data"], "age")
 
     return
 
