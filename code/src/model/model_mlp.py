@@ -8,27 +8,21 @@ class MultiLayerPerceptronClass(nn.Module):
     Multilayer Perceptron (MLP) Class
     """
 
-    def __init__(self, xdim: int = 784, hdim: int = 256, ydim: int = 10):
+    def __init__(self, settings, input_dim):
         super(MultiLayerPerceptronClass, self).__init__()
-        self.xdim = xdim
-        self.hdim = hdim
-        self.ydim = ydim
-        self.lin_1 = nn.Linear(self.xdim, self.hdim)
-        self.lin_2 = nn.Linear(self.hdim, self.ydim)
-        self.init_param()
 
-    def name(self) -> str:
-        return "MLP"
+        self.layer_num = settings["mlp"]["layer_num"]
+        self.layer_dim = settings["mlp"]["layer_dim"]
 
-    def init_param(self):
-        nn.init.kaiming_normal_(self.lin_1.weight)
-        nn.init.zeros_(self.lin_1.bias)
-        nn.init.kaiming_normal_(self.lin_2.weight)
-        nn.init.zeros_(self.lin_2.bias)
+        self.lin = nn.Sequential(nn.Linear(input_dim, self.layer_dim[0]), nn.ReLU())
+
+        for i in range(self.layer_num - 2):
+            self.lin.append(nn.Linear(self.layer_dim[i], self.layer_dim[i + 1]))
+            self.lin.append(nn.ReLU())
+
+        self.lin.append(nn.Linear(self.layer_dim[-1], 1))
 
     def forward(self, x: torch.Tensor):
-        net = x
-        net = self.lin_1(net)
-        net = F.relu(net)
-        net = self.lin_2(net)
-        return net
+        y_hat = self.lin(x)
+
+        return y_hat

@@ -14,7 +14,7 @@ def create_model(settings: dict):
     print("Creating Model...")
 
     if settings["run_model"]["name"].upper() == "MLP":
-        model = MultiLayerPerceptronClass(xdim=4, hdim=2, ydim=1)
+        model = MultiLayerPerceptronClass(settings, input_dim=settings["column_num"])
 
     print("Created Model!")
     print()

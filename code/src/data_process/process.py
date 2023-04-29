@@ -102,6 +102,8 @@ def process_data(data: dict, settings: dict) -> None:
         columns=[settings["predict_column"]]
     )
 
+    settings["column_num"] = len(data["test_ratings"].columns)
+
     print("Dropped Columns!")
     print()
 

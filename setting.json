@@ -29,5 +29,10 @@
         "optimizer": "ADAM",
         "epoch": 10,
         "learn_rate": 0.001
+    },
+
+    "mlp":  {
+        "layer_num": 3,
+        "layer_dim": [3, 2]
     }
 }
