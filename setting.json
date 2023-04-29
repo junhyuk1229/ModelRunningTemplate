@@ -4,7 +4,8 @@
         "code": "code",
         "log": "log",
         "model": "model",
-        "state_dict": "state_dict"
+        "state_dict": "state_dict",
+        "submit": "submit"
     },
 
     "choose_columns": [

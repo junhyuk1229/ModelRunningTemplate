@@ -49,6 +49,7 @@ def get_unprocessed_data(data_path: str) -> dict:
     data["user_data"] = pd.read_csv(os.path.join(data_path, "users.csv"))
     data["train_ratings"] = pd.read_csv(os.path.join(data_path, "train_ratings.csv"))
     data["test_ratings"] = pd.read_csv(os.path.join(data_path, "test_ratings.csv"))
+    data["raw_test_ratings"] = data["test_ratings"].copy(deep=True)
     data["sample_submission"] = pd.read_csv(
         os.path.join(data_path, "sample_submission.csv")
     )
@@ -67,6 +68,9 @@ class SaveSetting:
         self.statedict_folder_path = os.path.join(
             folder_path, general_settings["path"]["state_dict"]
         )
+        self.submit_folder_path = os.path.join(
+            folder_path, general_settings["path"]["submit"]
+        )
         self.name = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.log_file = None
         self.create_dir()
@@ -82,6 +86,8 @@ class SaveSetting:
             os.mkdir(self.model_folder_path)
         if not os.path.exists(self.statedict_folder_path):
             os.mkdir(self.statedict_folder_path)
+        if not os.path.exists(self.submit_folder_path):
+            os.mkdir(self.submit_folder_path)
 
         return
 
@@ -146,6 +152,16 @@ class SaveSetting:
             },
             temp_path,
         )
+
+        return
+
+    def save_submit(self, data, prediction) -> None:
+        # Create prediction
+        data["raw_test_ratings"]["rating"] = prediction
+
+        # Save prediction
+        temp_path = os.path.join(self.submit_folder_path, self.name + ".csv")
+        data["raw_test_ratings"].to_csv(temp_path, index=False)
 
         return
 

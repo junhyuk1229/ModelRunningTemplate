@@ -15,7 +15,7 @@ class RMSELoss(nn.Module):
         return loss
 
 
-def run_model(dataloader: dict, settings: dict, model, save_settings) -> None:
+def run_model(dataloader: dict, settings: dict, model, save_settings):
     """
     Runs model through train, valid, and submit.
 
@@ -68,6 +68,7 @@ def run_model(dataloader: dict, settings: dict, model, save_settings) -> None:
 
     print("Saving Model/State Dict...")
 
+    # Save model and state_dict, loss, settings
     save_settings.save_model(model)
     save_settings.save_statedict(
         model, valid_average_loss, train_average_loss, settings

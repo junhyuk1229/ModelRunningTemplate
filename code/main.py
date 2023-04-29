@@ -29,8 +29,12 @@ def main() -> None:
     model = create_model(general_settings)
 
     # Run model
-    predict_data = run_model(dataloader, general_settings, model, save_settings)
+    predicted_data = run_model(dataloader, general_settings, model, save_settings)
 
+    # Save predicted data as csv
+    save_settings.save_submit(data, predicted_data)
+
+    # Close log if opened
     save_settings.close_log()
 
     return

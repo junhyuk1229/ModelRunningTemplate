@@ -7,5 +7,6 @@ __pycache__
 /log
 /model
 /state_dict
+/submit
 
 /TODO.txt
