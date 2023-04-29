@@ -4,4 +4,6 @@ __pycache__
 
 /data/
 
+/log
+
 /TODO.txt

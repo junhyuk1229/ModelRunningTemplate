@@ -11,25 +11,25 @@ from src.run_model import run_model
 
 def main() -> None:
     # Get settings and raw data from files (getcwd changes to entire folder)
-    data, settings = setup()
+    data, general_settings, save_settings = setup()
 
     # Process raw data
-    process_data(data, settings)
+    process_data(data, general_settings)
 
     # Split data
-    data_split(data, settings)
+    data_split(data, general_settings)
 
     # Load datasets
-    dataset = create_datasets(data, settings)
+    dataset = create_datasets(data, general_settings)
 
     # Create dataloader
     dataloader = create_dataloader(dataset)
 
     # Create model
-    model = create_model(settings)
+    model = create_model(general_settings)
 
     # Run model
-    predict_data = run_model(dataloader, settings, model)
+    predict_data = run_model(dataloader, general_settings, model)
 
     return
 

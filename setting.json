@@ -1,7 +1,8 @@
 {
     "path": {
         "data": "data",
-        "code": "code"
+        "code": "code",
+        "log": "log"
     },
 
     "choose_columns": [

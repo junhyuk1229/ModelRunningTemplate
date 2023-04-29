@@ -7,7 +7,7 @@ import pandas as pd
 SETTING_FILE = "setting.json"
 
 
-def get_setting(folder_path: str) -> dict:
+def get_general_setting(folder_path: str) -> dict:
     """
     Returns the setting.json file as a dictionary.
 
@@ -54,7 +54,22 @@ def get_unprocessed_data(data_path: str) -> dict:
     return data
 
 
-def setup() -> tuple[dict, dict]:
+class SaveSetting():
+    def __init__(self, folder_path, general_settings):
+        self.log_folder_path = os.path.join(folder_path, general_settings['path']['log'])
+        self.create_dir()
+
+    def create_dir(self):
+        '''
+        Creates missing directories for save locations
+        '''
+        if not os.path.exists(self.log_folder_path):
+            os.mkdir(self.log_folder_path)
+
+        return
+
+
+def setup() -> tuple[dict, dict, SaveSetting]:
     """
     Returns setting and unprocessed data.
 
@@ -67,16 +82,16 @@ def setup() -> tuple[dict, dict]:
     os.chdir("..")
     folder_path = os.getcwd()
 
-    print("Getting Settings...")
+    print("Getting General Settings...")
 
     # Import settings
-    settings = get_setting(folder_path)
+    general_settings = get_general_setting(folder_path)
 
-    print("Loaded Settings!")
+    print("Loaded General Settings!")
     print()
 
     # Data path to data file
-    data_path = os.path.join(folder_path, settings["path"]["data"])
+    data_path = os.path.join(folder_path, general_settings["path"]["data"])
 
     print("Getting Unprocessed Data...")
 
@@ -86,4 +101,12 @@ def setup() -> tuple[dict, dict]:
     print("Got Unprocessed Data!")
     print()
 
-    return data, settings
+    print("Getting Save Settings...")
+
+    # Get save data
+    save_class = SaveSetting(folder_path, general_settings)
+
+    print("Got Save Settings!")
+    print()
+
+    return data, general_settings, save_class
