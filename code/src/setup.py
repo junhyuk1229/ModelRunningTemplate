@@ -54,15 +54,17 @@ def get_unprocessed_data(data_path: str) -> dict:
     return data
 
 
-class SaveSetting():
+class SaveSetting:
     def __init__(self, folder_path, general_settings):
-        self.log_folder_path = os.path.join(folder_path, general_settings['path']['log'])
+        self.log_folder_path = os.path.join(
+            folder_path, general_settings["path"]["log"]
+        )
         self.create_dir()
 
     def create_dir(self):
-        '''
+        """
         Creates missing directories for save locations
-        '''
+        """
         if not os.path.exists(self.log_folder_path):
             os.mkdir(self.log_folder_path)
 
