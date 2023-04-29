@@ -66,6 +66,9 @@ def run_model(dataloader: dict, settings: dict, model, save_settings) -> None:
     print("Trained Model!")
     print()
 
+    save_settings.save_model(model)
+    save_settings.save_statedict(model)
+
     print("Predicting Results...")
 
     # Get predicted data for submission

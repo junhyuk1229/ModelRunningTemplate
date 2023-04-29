@@ -17,6 +17,9 @@ class MultiLayerPerceptronClass(nn.Module):
         self.lin_2 = nn.Linear(self.hdim, self.ydim)
         self.init_param()
 
+    def name(self) -> str:
+        return "MLP"
+
     def init_param(self):
         nn.init.kaiming_normal_(self.lin_1.weight)
         nn.init.zeros_(self.lin_1.bias)

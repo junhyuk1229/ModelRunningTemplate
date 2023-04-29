@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 import os
 import pandas as pd
+import torch
 
 
 # Setting file name
@@ -60,6 +61,12 @@ class SaveSetting:
         self.log_folder_path = os.path.join(
             folder_path, general_settings["path"]["log"]
         )
+        self.model_folder_path = os.path.join(
+            folder_path, general_settings["path"]["model"]
+        )
+        self.statedict_folder_path = os.path.join(
+            folder_path, general_settings["path"]["state_dict"]
+        )
         self.name = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.log_file = None
         self.create_dir()
@@ -71,6 +78,10 @@ class SaveSetting:
         """
         if not os.path.exists(self.log_folder_path):
             os.mkdir(self.log_folder_path)
+        if not os.path.exists(self.model_folder_path):
+            os.mkdir(self.model_folder_path)
+        if not os.path.exists(self.statedict_folder_path):
+            os.mkdir(self.statedict_folder_path)
 
         return
 
@@ -107,6 +118,20 @@ class SaveSetting:
         """
         if self.log_file is not None:
             self.log_file.close()
+
+        return
+
+    def save_model(self, model) -> None:
+        temp_path = os.path.join(self.model_folder_path, self.name)
+        temp_path += f"_model"
+        torch.save(model, temp_path)
+
+        return
+
+    def save_statedict(self, model) -> None:
+        temp_path = os.path.join(self.statedict_folder_path, self.name)
+        temp_path += f"_statedict"
+        torch.save(model.state_dict(), temp_path)
 
         return
 

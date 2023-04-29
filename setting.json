@@ -2,7 +2,9 @@
     "path": {
         "data": "data",
         "code": "code",
-        "log": "log"
+        "log": "log",
+        "model": "model",
+        "state_dict": "state_dict"
     },
 
     "choose_columns": [

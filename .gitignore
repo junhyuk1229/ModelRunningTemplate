@@ -5,5 +5,7 @@ __pycache__
 /data/
 
 /log
+/model
+/state_dict
 
 /TODO.txt
