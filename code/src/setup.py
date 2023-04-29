@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import os
 import pandas as pd
@@ -59,14 +60,53 @@ class SaveSetting:
         self.log_folder_path = os.path.join(
             folder_path, general_settings["path"]["log"]
         )
+        self.name = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.log_file = None
         self.create_dir()
+        self.start_log(general_settings)
 
-    def create_dir(self):
+    def create_dir(self) -> None:
         """
         Creates missing directories for save locations
         """
         if not os.path.exists(self.log_folder_path):
             os.mkdir(self.log_folder_path)
+
+        return
+
+    def append_log(self, input_obj) -> None:
+        """
+        Appends the input string to the log
+        """
+        if self.log_file is None:
+            log_file_path = os.path.join(self.log_folder_path, self.name) + ".txt"
+            self.log_file = open(log_file_path, "a")
+
+        self.log_file.writelines(input_obj)
+
+        return
+
+    def start_log(self, general_settings) -> None:
+        """
+        Starts log by writing initial settings
+        """
+        with open(os.path.join(self.log_folder_path, self.name) + ".txt", "w") as f:
+            f.write("Choosen Columns:\t")
+            f.write(", ".join(general_settings["choose_columns"]) + "\n")
+            f.write("Indexed Columns:\t")
+            f.write(", ".join(general_settings["index_columns"]) + "\n")
+            f.write("Model Configuration:\n")
+            for index, value in general_settings["run_model"].items():
+                f.write(f"\t{index}:\t{value}\n")
+            f.write("=" * 30 + "\n\n")
+        return
+
+    def close_log(self) -> None:
+        """
+        Ends log if log is opened
+        """
+        if self.log_file is not None:
+            self.log_file.close()
 
         return
 
@@ -78,6 +118,7 @@ def setup() -> tuple[dict, dict, SaveSetting]:
     Returns:
         data(dict): Dictionary containing the unprocessed dataframes.
         settings(dict): Dictionary containing the settings.
+        save_settings(SaveSetting): Class used to save files(log, model, result).
     """
 
     # Changes directory to parent directory
@@ -106,9 +147,9 @@ def setup() -> tuple[dict, dict, SaveSetting]:
     print("Getting Save Settings...")
 
     # Get save data
-    save_class = SaveSetting(folder_path, general_settings)
+    save_settings = SaveSetting(folder_path, general_settings)
 
     print("Got Save Settings!")
     print()
 
-    return data, general_settings, save_class
+    return data, general_settings, save_settings

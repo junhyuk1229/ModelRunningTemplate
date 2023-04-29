@@ -29,7 +29,9 @@ def main() -> None:
     model = create_model(general_settings)
 
     # Run model
-    predict_data = run_model(dataloader, general_settings, model)
+    predict_data = run_model(dataloader, general_settings, model, save_settings)
+
+    save_settings.close_log()
 
     return
 

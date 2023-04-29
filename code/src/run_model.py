@@ -15,7 +15,7 @@ class RMSELoss(nn.Module):
         return loss
 
 
-def run_model(dataloader: dict, settings: dict, model) -> None:
+def run_model(dataloader: dict, settings: dict, model, save_settings) -> None:
     """
     Runs model through train, valid, and submit.
 
@@ -56,6 +56,11 @@ def run_model(dataloader: dict, settings: dict, model) -> None:
         print(
             f"Epoch: {epoch + 1}\tTrain loss: {train_average_loss}\tValid loss: {valid_average_loss}"
         )
+
+        save_settings.append_log(
+            f"Epoch: {epoch + 1}\tTrain loss: {train_average_loss}\tValid loss: {valid_average_loss}\n"
+        )
+
     print()
 
     print("Trained Model!")

@@ -62,7 +62,7 @@ def process_data(data: dict, settings: dict) -> None:
     # Modify data
     print("Modifing Data...")
 
-    if settings["choose_model"]["name"].lower() == "mlp":
+    if settings["run_model"]["name"].lower() == "mlp":
         process_mlp(data)
 
     print("Modified Data!")
