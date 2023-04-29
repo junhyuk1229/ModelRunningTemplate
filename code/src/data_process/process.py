@@ -4,7 +4,7 @@ from .data_modify import age_average_fill_na, average_fill_na
 
 def index_data(data: dict, settings: dict) -> None:
     """
-    Processes data for MLP training.
+    Indexes selected columns from setting.
 
     Parameters:
         data(dict): Dictionary containing the unprocessed dataframes.
@@ -93,16 +93,25 @@ def process_data(data: dict, settings: dict) -> None:
     # Drop unwanted columns
     print("Dropping Columns...")
 
-    data["train_ratings"] = data["train_ratings"][settings["choose_columns"]]
-    data["test_ratings"] = data["test_ratings"][settings["choose_columns"]]
-    data["sample_submission"] = data["sample_submission"][settings["choose_columns"]]
+    if settings["run_model"]["name"].lower() == "mf":
+        data["train_ratings"] = data["train_ratings"][["user_id", "isbn", "rating"]]
+        data["test_ratings"] = data["test_ratings"][["user_id", "isbn", "rating"]]
+        data["sample_submission"] = data["sample_submission"][["user_id", "isbn", "rating"]]
+    else:
+        data["train_ratings"] = data["train_ratings"][settings["choose_columns"]]
+        data["test_ratings"] = data["test_ratings"][settings["choose_columns"]]
+        data["sample_submission"] = data["sample_submission"][settings["choose_columns"]]
 
-    # Drop predicting column
+    # Drop predicting column for test
     data["test_ratings"] = data["test_ratings"].drop(
         columns=[settings["predict_column"]]
     )
 
-    settings["column_num"] = len(data["test_ratings"].columns)
+    if settings["run_model"]["name"].lower() == "mlp":
+        settings["column_num"] = len(data["test_ratings"].columns)
+    elif settings["run_model"]["name"].lower() == "mf":
+        settings["user_num"] = len(data["user_data"][["user_id"]])
+        settings["book_num"] = len(data["book_data"][["isbn"]])
 
     print("Dropped Columns!")
     print()

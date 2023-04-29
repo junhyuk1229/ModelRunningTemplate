@@ -24,7 +24,7 @@
     "predict_column": "rating",
 
     "run_model":    {
-        "name": "MLP",
+        "name": "MF",
         "loss_fn": "RMSE",
         "optimizer": "ADAM",
         "epoch": 10,
@@ -34,5 +34,9 @@
     "mlp":  {
         "layer_num": 3,
         "layer_dim": [3, 2]
+    },
+
+    "mf":   {
+        "k": 20
     }
 }

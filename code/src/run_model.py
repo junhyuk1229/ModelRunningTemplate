@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.optim import Adam
@@ -24,44 +25,59 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
         settings(dict): Dictionary containing the settings.
         model(nn.Module): Model used to train
     """
-
     # Set loss function
     if settings["run_model"]["loss_fn"].lower() == "rmse":
         loss_fn = RMSELoss()
     elif settings["run_model"]["loss_fn"].lower() == "mse":
         loss_fn = MSELoss()
 
-    # Set optimizer
-    if settings["run_model"]["optimizer"].lower() == "adam":
-        optimizer = Adam(model.parameters(), lr=settings["run_model"]["learn_rate"])
+    if settings["run_model"]["name"].lower() == "mlp":
+        # Set optimizer
+        if settings["run_model"]["optimizer"].lower() == "adam":
+            optimizer = Adam(model.parameters(), lr=settings["run_model"]["learn_rate"])
 
-    print("Training Model...")
-    print()
+        print("Training Model...")
+        print()
 
-    # Set epoch for training
-    for epoch in range(settings["run_model"]["epoch"]):
-        # Change model state to train
-        model.train()
+        # Set epoch for training
+        for epoch in range(settings["run_model"]["epoch"]):
+            # Change model state to train
+            model.train()
 
-        # Get average loss while training
-        train_average_loss = train_model(dataloader, model, loss_fn, optimizer)
+            # Get average loss while training
+            train_average_loss = train_model(dataloader, model, loss_fn, optimizer)
 
-        # Change model state to evaluation
-        model.eval()
+            # Change model state to evaluation
+            model.eval()
 
-        # Get average loss using validation set
-        valid_average_loss = validate_model(dataloader, model, loss_fn)
+            # Get average loss using validation set
+            valid_average_loss = validate_model(dataloader, model, loss_fn)
 
-        # Print average loss of train/valid set
-        print(
-            f"Epoch: {epoch + 1}\tTrain loss: {train_average_loss}\tValid loss: {valid_average_loss}"
-        )
+            # Print average loss of train/valid set
+            print(
+                f"Epoch: {epoch + 1}\tTrain loss: {train_average_loss}\tValid loss: {valid_average_loss}"
+            )
 
-        save_settings.append_log(
-            f"Epoch: {epoch + 1}\tTrain loss: {train_average_loss}\tValid loss: {valid_average_loss}\n"
-        )
+            save_settings.append_log(
+                f"Epoch: {epoch + 1}\tTrain loss: {train_average_loss}\tValid loss: {valid_average_loss}\n"
+            )
 
-    print()
+        print()
+
+    elif settings["run_model"]["name"].lower() == "mf":
+        # Create R matrix
+        R = np.zeros((settings["user_num"], settings["book_num"]), )
+        
+        for data in dataloader["train_dataloader"]:
+            x, y = data
+            user, book = x
+            R[user, book] = y
+        
+        print(R)
+        # Find error
+        # Update parameters
+        # Check valid error
+        pass
 
     print("Trained Model!")
     print()
