@@ -43,10 +43,17 @@ def run_model(dataloader: dict, settings: dict, model) -> None:
         # Change model state to train
         model.train()
 
-        average_loss = train_model(dataloader, settings, model, loss_fn, optimizer)
+        # Get average loss while training
+        train_average_loss = train_model(dataloader, model, loss_fn, optimizer)
+
+        model.eval()
+
+        valid_average_loss = validate_model(dataloader, model, loss_fn)
 
         # Print average loss
-        print(f"epoch: {epoch + 1}\tloss: {average_loss.item()}")
+        print(
+            f"Epoch: {epoch + 1}\tTrain loss: {train_average_loss}\tValid loss: {valid_average_loss}"
+        )
     print()
 
     print("Trained Model!")
@@ -55,14 +62,15 @@ def run_model(dataloader: dict, settings: dict, model) -> None:
     return
 
 
-def train_model(dataloader: dict, settings: dict, model, loss_fn, optimizer) -> None:
+def train_model(dataloader: dict, model, loss_fn, optimizer) -> float:
     """
     Trains model.
 
     Parameters:
         dataloader(dict): Dictionary containing the dictionary.
-        settings(dict): Dictionary containing the settings.
         model(nn.Module): Model used to train
+        loss_fn: Used to find the loss between two tensors
+        optimizer: Used to optimize parameters
     """
 
     # Total sum of loss
@@ -94,4 +102,41 @@ def train_model(dataloader: dict, settings: dict, model, loss_fn, optimizer) -> 
         total_loss += loss.clone().detach()
         batch_count += 1
 
-    return total_loss / batch_count
+    average_loss = total_loss / batch_count
+
+    return average_loss.item()
+
+
+def validate_model(dataloader: dict, model, loss_fn) -> float:
+    """
+    Uses valid dataloader to get loss of model.
+
+    Parameters:
+        dataloader(dict): Dictionary containing the dictionary.
+        model(nn.Module): Model used to train
+        loss_fn: Used to find the loss between two tensors
+    """
+
+    # Total sum of loss
+    total_loss = 0
+
+    # Number of batches trained
+    batch_count = 0
+
+    for data in dataloader["valid_dataloader"]:
+        # Split data to input and output
+        x, y = data
+
+        # Get predicted output with input
+        y_hat = model(x)
+
+        # Get loss using predicted output
+        loss = loss_fn(y, torch.squeeze(y_hat))
+
+        # Get cumulative loss and count
+        total_loss += loss
+        batch_count += 1
+
+    average_loss = total_loss / batch_count
+
+    return average_loss.item()
