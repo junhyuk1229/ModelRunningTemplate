@@ -46,11 +46,13 @@ def run_model(dataloader: dict, settings: dict, model) -> None:
         # Get average loss while training
         train_average_loss = train_model(dataloader, model, loss_fn, optimizer)
 
+        # Change model state to evaluation
         model.eval()
 
+        # Get average loss using validation set
         valid_average_loss = validate_model(dataloader, model, loss_fn)
 
-        # Print average loss
+        # Print average loss of train/valid set
         print(
             f"Epoch: {epoch + 1}\tTrain loss: {train_average_loss}\tValid loss: {valid_average_loss}"
         )
@@ -59,7 +61,15 @@ def run_model(dataloader: dict, settings: dict, model) -> None:
     print("Trained Model!")
     print()
 
-    return
+    print("Predicting Results...")
+
+    # Get predicted data for submission
+    predict_data = test_model(dataloader, model)
+
+    print("Predicted Results!")
+    print()
+
+    return predict_data
 
 
 def train_model(dataloader: dict, model, loss_fn, optimizer) -> float:
@@ -123,20 +133,50 @@ def validate_model(dataloader: dict, model, loss_fn) -> float:
     # Number of batches trained
     batch_count = 0
 
-    for data in dataloader["valid_dataloader"]:
-        # Split data to input and output
-        x, y = data
+    # No learning from validation data
+    with torch.no_grad():
+        for data in dataloader["valid_dataloader"]:
+            # Split data to input and output
+            x, y = data
 
-        # Get predicted output with input
-        y_hat = model(x)
+            # Get predicted output with input
+            y_hat = model(x)
 
-        # Get loss using predicted output
-        loss = loss_fn(y, torch.squeeze(y_hat))
+            # Get loss using predicted output
+            loss = loss_fn(y, torch.squeeze(y_hat))
 
-        # Get cumulative loss and count
-        total_loss += loss
-        batch_count += 1
+            # Get cumulative loss and count
+            total_loss += loss
+            batch_count += 1
 
     average_loss = total_loss / batch_count
 
     return average_loss.item()
+
+
+def test_model(dataloader: dict, model) -> list:
+    """
+    Use test data to get prediction for submission.
+
+    Parameters:
+        dataloader(dict): Dictionary containing the dictionary.
+        model(nn.Module): Model used to train
+
+    Returns:
+        predicted_list(list): Predicted results from test dataset.
+    """
+    # Predicted values in order
+    predicted_list = list()
+
+    with torch.no_grad():
+        for data in dataloader["test_dataloader"]:
+            # Get input data
+            x = data[0]
+
+            # Get predicted output with input
+            y_hat = model(x)
+
+            # Add predicted output to list
+            predicted_list.extend(y_hat.squeeze().tolist())
+
+    return predicted_list

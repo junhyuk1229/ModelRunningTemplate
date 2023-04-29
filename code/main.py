@@ -28,8 +28,8 @@ def main() -> None:
     # Create model
     model = create_model(settings)
 
-    # Train model
-    run_model(dataloader, settings, model)
+    # Run model
+    predict_data = run_model(dataloader, settings, model)
 
     return
 
