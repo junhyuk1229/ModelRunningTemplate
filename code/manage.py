@@ -15,7 +15,7 @@ def get_df(statedict_path):
         print("Ending Program")
 
         return
-    
+
     train_list = []
     valid_list = []
     model_name = []
@@ -53,7 +53,7 @@ def clear_data(path_list):
 def sort_df(result_df, input_str):
     if len(input_str) < 2:
         return
-    
+
     if len(input_str) < 3:
         result_df.sort_values(by=input_str[1], inplace=True)
     else:
@@ -68,8 +68,8 @@ def sort_df(result_df, input_str):
 def choose_model(result_df, input_str):
     if len(input_str) < 2:
         return result_df
-    
-    result_df = result_df[result_df['model_name'] == input_str[1].lower()]
+
+    result_df = result_df[result_df["model_name"] == input_str[1].lower()]
     return result_df
 
 
@@ -78,7 +78,7 @@ def delete_model(result_df, input_str, path_list):
         return
 
     file_name = result_df["file_name"][int(input_str[1])]
-    
+
     print(file_name)
 
     ending_str = [".txt", "_model", "_statedict", ".csv"]
@@ -108,20 +108,20 @@ def main() -> None:
     origin_df = result_df.copy(deep=True)
 
     while True:
-        os.system('cls' if os.name == 'nt' else 'clear')
+        os.system("cls" if os.name == "nt" else "clear")
 
         if len(result_df) == 0:
             print("Detected empty dataframe...")
             print("Restored original dataframe")
             result_df = origin_df.copy(deep=True)
-        
+
         print("Printing First 5 data...")
         print(result_df[:5])
         print()
         print("Commands: clear, sort, model, reload, exit")
         print("Enter your command: ", end="")
 
-        input_str = input().split(sep=' ')
+        input_str = input().split(sep=" ")
 
         if input_str[0] == "clear":
             clear_data(path_list)
