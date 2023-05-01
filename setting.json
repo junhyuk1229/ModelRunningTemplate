@@ -7,7 +7,8 @@
         "state_dict": "state_dict",
         "submit": "submit",
         "train": "train",
-        "valid": "valid"
+        "valid": "valid",
+        "ensemble": "ensemble"
     },
 
     "choose_columns": [
