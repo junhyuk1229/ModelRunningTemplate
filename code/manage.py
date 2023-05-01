@@ -2,8 +2,20 @@ import os
 import pandas as pd
 import shutil
 from src.setup import get_general_setting
-import sys
 import torch
+import torch.nn as nn
+from torch.nn import MSELoss
+
+
+class RMSELoss(nn.Module):
+    def __init__(self):
+        super(RMSELoss, self).__init__()
+        self.eps = 1e-6
+
+    def forward(self, x, y):
+        criterion = MSELoss()
+        loss = torch.sqrt(criterion(x, y) + self.eps)
+        return loss
 
 
 def get_df(statedict_path):
@@ -121,6 +133,8 @@ def main() -> None:
 
     origin_df = result_df.copy(deep=True)
 
+    head_num = 5
+
     while True:
         os.system("cls" if os.name == "nt" else "clear")
 
@@ -129,17 +143,17 @@ def main() -> None:
             print("Restored original dataframe")
             result_df = origin_df.copy(deep=True)
 
-        print("Printing First 5 data...")
-        print(result_df[:5])
+        print(f"Printing First {head_num} data...")
+        print(result_df[:head_num])
         print()
-        print("Commands: clear, sort, model, reload, delete, exit")
+        print("Commands: clear, sort, model, reload, delete, head, exit")
         print("Enter your command: ", end="")
 
         input_str = input().split(sep=" ")
 
         if input_str[0] == "clear":
             if clear_data(path_list):
-                return
+                break
         elif input_str[0] == "sort":
             sort_df(result_df, input_str)
         elif input_str[0] == "model":
@@ -152,10 +166,11 @@ def main() -> None:
         elif input_str[0] == "exit":
             print("Exiting...\n")
             break
+        elif input_str[0] == "head":
+            head_num = int(input_str[1])
         else:
             print("Unrecognised command...\nExiting...\n")
             break
-
     return
 
 
