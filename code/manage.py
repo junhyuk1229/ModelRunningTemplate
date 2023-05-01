@@ -105,7 +105,7 @@ def delete_model(result_df, input_str, path_list):
 
 
 def ensemble(result_df, input_str, path_list, ensemble_path):
-    select_rows = list(map(int, input_str[1].split(sep=',')))
+    select_rows = list(map(int, input_str[1].split(sep=",")))
     ensemble_name = result_df["file_name"][select_rows].T.values
     train_list = result_df["train_loss"][select_rows].T.values
     valid_list = result_df["valid_loss"][select_rows].T.values
@@ -121,7 +121,7 @@ def ensemble(result_df, input_str, path_list, ensemble_path):
     if len(input_str) < 3:
         weight_list = [1 / len(select_rows)] * len(select_rows)
     else:
-        weight_list = list(map(float, input_str[2].split(sep=',')))
+        weight_list = list(map(float, input_str[2].split(sep=",")))
         total_sum = sum(weight_list)
         weight_list = [f / total_sum for f in weight_list]
 
@@ -137,19 +137,25 @@ def ensemble(result_df, input_str, path_list, ensemble_path):
             valid_total = valid_total.add(temp_valid)
 
     loss = RMSELoss()
-    train_loss = loss(torch.tensor(train_total.values), torch.tensor(pd.read_csv(train_path)["rating"].values))
-    valid_loss = loss(torch.tensor(valid_total.values), torch.tensor(pd.read_csv(valid_path)["rating"].values))
-    
+    train_loss = loss(
+        torch.tensor(train_total.values),
+        torch.tensor(pd.read_csv(train_path)["rating"].values),
+    )
+    valid_loss = loss(
+        torch.tensor(valid_total.values),
+        torch.tensor(pd.read_csv(valid_path)["rating"].values),
+    )
+
     os.system("cls" if os.name == "nt" else "clear")
     print(f"File train loss: {train_list}\tEnsemble train loss: {train_loss}")
     print(f"File valid loss: {valid_list}\tEnsemble valid loss: {valid_loss}")
     print("Do you want to make the file?(y): ")
 
     response = input()
-    if response == 'y':
+    if response == "y":
         if not os.path.exists(ensemble_path):
             os.mkdir(ensemble_path)
-        
+
         test_df = []
         for file_name in ensemble_name:
             test_path = os.path.join(path_list[-3], file_name) + ".csv"
@@ -159,7 +165,7 @@ def ensemble(result_df, input_str, path_list, ensemble_path):
 
         for i, w in enumerate(weight_list):
             temp_test = test_df[i].apply(lambda x: x * w)
-            
+
             if i == 0:
                 test_total = temp_test
             else:
@@ -167,7 +173,12 @@ def ensemble(result_df, input_str, path_list, ensemble_path):
 
         output_df["rating"] = test_total.values
 
-        output_df.to_csv(os.path.join(ensemble_path, f"{train_loss:.3f}_{valid_loss:.3f}_{'_'.join(ensemble_name)}"))
+        output_df.to_csv(
+            os.path.join(
+                ensemble_path,
+                f"{train_loss:.3f}_{valid_loss:.3f}_{'_'.join(ensemble_name)}",
+            )
+        )
 
     return
 
