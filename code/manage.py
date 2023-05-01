@@ -105,7 +105,14 @@ def main() -> None:
     train_path = os.path.join(folder_path, settings["path"]["train"])
     valid_path = os.path.join(folder_path, settings["path"]["valid"])
 
-    path_list = [log_path, model_path, statedict_path, submit_path, train_path, valid_path]
+    path_list = [
+        log_path,
+        model_path,
+        statedict_path,
+        submit_path,
+        train_path,
+        valid_path,
+    ]
 
     result_df = get_df(statedict_path)
 

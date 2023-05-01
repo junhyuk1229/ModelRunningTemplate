@@ -70,12 +70,18 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
     print("Getting Final Results...")
 
     # Get final results
-    train_df, train_final_loss = get_df_result(dataloader["train_dataloader"], model, loss_fn)
-    valid_df, valid_final_loss = get_df_result(dataloader["valid_dataloader"], model, loss_fn)
+    train_df, train_final_loss = get_df_result(
+        dataloader["train_dataloader"], model, loss_fn
+    )
+    valid_df, valid_final_loss = get_df_result(
+        dataloader["valid_dataloader"], model, loss_fn
+    )
 
     save_settings.save_train_valid(train_df, valid_df)
 
-    print(f"Final results:\tTrain loss: {train_final_loss}\tValid loss: {valid_final_loss}")
+    print(
+        f"Final results:\tTrain loss: {train_final_loss}\tValid loss: {valid_final_loss}"
+    )
 
     print("Got Final Results!")
     print()
@@ -84,9 +90,7 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
 
     # Save model and state_dict, loss, settings
     save_settings.save_model(model)
-    save_settings.save_statedict(
-        model, train_final_loss, valid_final_loss, settings
-    )
+    save_settings.save_statedict(model, train_final_loss, valid_final_loss, settings)
 
     print("Saved Model/State Dict!")
     print()
@@ -214,7 +218,7 @@ def test_model(dataloader: dict, model) -> list:
 
 def get_df_result(dataloader, model, loss_fn):
     """
-    
+
 
     Parameters:
         dataloader(dict): Dictionary containing the dictionary.
@@ -230,7 +234,7 @@ def get_df_result(dataloader, model, loss_fn):
     batch_count = 0
 
     # Create dataframe to save
-    column_list = ["user_id", "isbn", 'rating', 'p_rating']
+    column_list = ["user_id", "isbn", "rating", "p_rating"]
     save_df = pd.DataFrame({c: [] for c in column_list})
 
     for data in dataloader:
@@ -241,7 +245,7 @@ def get_df_result(dataloader, model, loss_fn):
         y_hat = model(x)
 
         # Update dataframe
-        x = pd.DataFrame(x, columns=["user_id", 'isbn', 'age', 'year'])
+        x = pd.DataFrame(x, columns=["user_id", "isbn", "age", "year"])
         x = x[["user_id", "isbn"]]
         x["rating"] = y
         x["p_rating"] = y_hat.detach().numpy()
