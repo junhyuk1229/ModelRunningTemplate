@@ -8,5 +8,7 @@ __pycache__
 /model
 /state_dict
 /submit
+/train
+/valid
 
 /TODO.txt

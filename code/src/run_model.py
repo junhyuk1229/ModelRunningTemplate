@@ -1,3 +1,4 @@
+import pandas as pd
 import torch
 import torch.nn as nn
 from torch.optim import Adam
@@ -66,12 +67,25 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
     print("Trained Model!")
     print()
 
+    print("Getting Final Results...")
+
+    # Get final results
+    train_df, train_final_loss = get_df_result(dataloader["train_dataloader"], model, loss_fn)
+    valid_df, valid_final_loss = get_df_result(dataloader["valid_dataloader"], model, loss_fn)
+
+    save_settings.save_train_valid(train_df, valid_df)
+
+    print(f"Final results:\tTrain loss: {train_final_loss}\tValid loss: {valid_final_loss}")
+
+    print("Got Final Results!")
+    print()
+
     print("Saving Model/State Dict...")
 
     # Save model and state_dict, loss, settings
     save_settings.save_model(model)
     save_settings.save_statedict(
-        model, valid_average_loss, train_average_loss, settings
+        model, train_final_loss, valid_final_loss, settings
     )
 
     print("Saved Model/State Dict!")
@@ -196,3 +210,51 @@ def test_model(dataloader: dict, model) -> list:
             predicted_list.extend(y_hat.squeeze().tolist())
 
     return predicted_list
+
+
+def get_df_result(dataloader, model, loss_fn):
+    """
+    
+
+    Parameters:
+        dataloader(dict): Dictionary containing the dictionary.
+        model(nn.Module): Model used to train
+        loss_fn: Used to find the loss between two tensors
+        optimizer: Used to optimize parameters
+    """
+
+    # Total sum of loss
+    total_loss = 0
+
+    # Number of batches trained
+    batch_count = 0
+
+    # Create dataframe to save
+    column_list = ["user_id", "isbn", 'rating', 'p_rating']
+    save_df = pd.DataFrame({c: [] for c in column_list})
+
+    for data in dataloader:
+        # Split data to input and output
+        x, y = data
+
+        # Get predicted output with input
+        y_hat = model(x)
+
+        # Update dataframe
+        x = pd.DataFrame(x, columns=["user_id", 'isbn', 'age', 'year'])
+        x = x[["user_id", "isbn"]]
+        x["rating"] = y
+        x["p_rating"] = y_hat.detach().numpy()
+        save_df = pd.concat([save_df, x])
+
+        # Get loss using predicted output
+        loss = loss_fn(y, torch.squeeze(y_hat))
+
+        # Get cumulative loss and count
+        total_loss += loss.clone().detach()
+        batch_count += 1
+
+    # Get average loss
+    average_loss = total_loss / batch_count
+
+    return save_df, average_loss.item()

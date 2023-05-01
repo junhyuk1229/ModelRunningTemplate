@@ -20,6 +20,8 @@ def index_data(data: dict, settings: dict) -> None:
             data["sample_submission"][index_column].unique().tolist()
         )
 
+        unique_elements = sorted(unique_elements)
+
         # Create dictionary to change data to index
         temp_idx = {v: i for i, v in enumerate(unique_elements)}
 

@@ -14,7 +14,7 @@ def get_df(statedict_path):
         print("No Results Detected...")
         print("Ending Program")
 
-        return
+        return None
 
     train_list = []
     valid_list = []
@@ -45,9 +45,10 @@ def clear_data(path_list):
         for p in path_list:
             if os.path.exists(p):
                 shutil.rmtree(p)
-        return
+        print("Cleared all results!")
+        return True
     else:
-        return
+        return False
 
 
 def sort_df(result_df, input_str):
@@ -81,7 +82,7 @@ def delete_model(result_df, input_str, path_list):
 
     print(file_name)
 
-    ending_str = [".txt", "_model", "_statedict", ".csv"]
+    ending_str = [".txt", "_model", "_statedict", ".csv", "_train.csv", "_valid.csv"]
 
     for p, e_s in zip(path_list, ending_str):
         os.remove(os.path.join(p, file_name + e_s))
@@ -101,10 +102,16 @@ def main() -> None:
     model_path = os.path.join(folder_path, settings["path"]["model"])
     statedict_path = os.path.join(folder_path, settings["path"]["state_dict"])
     submit_path = os.path.join(folder_path, settings["path"]["submit"])
+    train_path = os.path.join(folder_path, settings["path"]["train"])
+    valid_path = os.path.join(folder_path, settings["path"]["valid"])
 
-    path_list = [log_path, model_path, statedict_path, submit_path]
+    path_list = [log_path, model_path, statedict_path, submit_path, train_path, valid_path]
 
     result_df = get_df(statedict_path)
+
+    if result_df is None:
+        return
+
     origin_df = result_df.copy(deep=True)
 
     while True:
@@ -118,13 +125,14 @@ def main() -> None:
         print("Printing First 5 data...")
         print(result_df[:5])
         print()
-        print("Commands: clear, sort, model, reload, exit")
+        print("Commands: clear, sort, model, reload, delete, exit")
         print("Enter your command: ", end="")
 
         input_str = input().split(sep=" ")
 
         if input_str[0] == "clear":
-            clear_data(path_list)
+            if clear_data(path_list):
+                return
         elif input_str[0] == "sort":
             sort_df(result_df, input_str)
         elif input_str[0] == "model":

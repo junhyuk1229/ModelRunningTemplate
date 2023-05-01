@@ -18,7 +18,7 @@ def data_split(data: dict, settings: dict) -> None:
     X_train, X_valid, y_train, y_valid = train_test_split(
         data["train_ratings"].drop([settings["predict_column"]], axis=1),
         data["train_ratings"][settings["predict_column"]],
-        test_size=0.9,
+        test_size=0.1,
         random_state=42,
         shuffle=True,
     )

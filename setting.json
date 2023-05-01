@@ -5,7 +5,9 @@
         "log": "log",
         "model": "model",
         "state_dict": "state_dict",
-        "submit": "submit"
+        "submit": "submit",
+        "train": "train",
+        "valid": "valid"
     },
 
     "choose_columns": [

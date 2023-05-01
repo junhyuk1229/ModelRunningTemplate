@@ -71,6 +71,12 @@ class SaveSetting:
         self.submit_folder_path = os.path.join(
             folder_path, general_settings["path"]["submit"]
         )
+        self.train_folder_path = os.path.join(
+            folder_path, general_settings["path"]["train"]
+        )
+        self.valid_folder_path = os.path.join(
+            folder_path, general_settings["path"]["valid"]
+        )
         self.name = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.log_file = None
         self.create_dir()
@@ -88,7 +94,10 @@ class SaveSetting:
             os.mkdir(self.statedict_folder_path)
         if not os.path.exists(self.submit_folder_path):
             os.mkdir(self.submit_folder_path)
-
+        if not os.path.exists(self.train_folder_path):
+            os.mkdir(self.train_folder_path)
+        if not os.path.exists(self.valid_folder_path):
+            os.mkdir(self.valid_folder_path)
         return
 
     def append_log(self, input_obj) -> None:
@@ -164,6 +173,15 @@ class SaveSetting:
         data["raw_test_ratings"].to_csv(temp_path, index=False)
 
         return
+
+    def save_train_valid(self, train_df, valid_df) -> None:
+        # Create path
+        train_path = os.path.join(self.train_folder_path, self.name + "_train.csv")
+        valid_path = os.path.join(self.valid_folder_path, self.name + "_valid.csv")
+
+        # Save dataframe as csv
+        train_df.to_csv(train_path, index=False)
+        valid_df.to_csv(valid_path, index=False)
 
 
 def setup() -> tuple[dict, dict, SaveSetting]:
