@@ -1,8 +1,13 @@
+import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
 from torch.optim import Adam
 from torch.nn import MSELoss
+from sklearn.metrics import accuracy_score, roc_auc_score
+from torch.nn.functional import sigmoid
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+from transformers import get_linear_schedule_with_warmup
 
 
 class RMSELoss(nn.Module):
@@ -31,13 +36,25 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
         loss_fn = RMSELoss()
     elif settings["run_model"]["loss_fn"].lower() == "mse":
         loss_fn = MSELoss()
+    elif settings["run_model"]["loss_fn"].lower() == "bcewll":
+        loss_fn = torch.nn.BCEWithLogitsLoss(reduction="none")
 
     # Set optimizer
     if settings["run_model"]["optimizer"].lower() == "adam":
-        optimizer = Adam(model.parameters(), lr=settings["run_model"]["learn_rate"])
+        optimizer = Adam(
+            model.parameters(),
+            lr=settings["run_model"]["learn_rate"],
+            weight_decay=0.01,
+        )
+
+    scheduler = ReduceLROnPlateau(
+        optimizer, patience=10, factor=0.5, mode="max", verbose=True
+    )
 
     print("Training Model...")
     print()
+
+    best_auc = -1
 
     # Set epoch for training
     for epoch in range(settings["run_model"]["epoch"]):
@@ -45,27 +62,36 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
         model.train()
 
         # Get average loss while training
-        train_average_loss = train_model(dataloader, model, loss_fn, optimizer)
+        train_auc, train_acc = train_model(
+            dataloader, model, loss_fn, optimizer, scheduler
+        )
 
         # Change model state to evaluation
         model.eval()
 
         # Get average loss using validation set
-        valid_average_loss = validate_model(dataloader, model, loss_fn)
+        valid_acc, valid_auc = validate_model(dataloader, model, loss_fn)
+
+        if valid_auc > best_auc:
+            best_auc = valid_auc
+
+        scheduler.step(best_auc)
 
         # Print average loss of train/valid set
         print(
-            f"Epoch: {epoch + 1}\tTrain loss: {train_average_loss}\tValid loss: {valid_average_loss}"
+            f"Epoch: {epoch + 1}\nTrain acc: {train_acc}\tTrain auc: {train_auc}\nValid acc: {valid_acc}\t Valid auc: {valid_auc}\n"
         )
 
         save_settings.append_log(
-            f"Epoch: {epoch + 1}\tTrain loss: {train_average_loss}\tValid loss: {valid_average_loss}\n"
+            f"Epoch: {epoch + 1}\nTrain acc: {train_acc}\tTrain auc: {train_auc}\nValid acc: {valid_acc}\t Valid auc: {valid_auc}"
         )
 
     print()
 
     print("Trained Model!")
     print()
+
+    return
 
     print("Getting Final Results...")
 
@@ -106,7 +132,7 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
     return predict_data
 
 
-def train_model(dataloader: dict, model, loss_fn, optimizer) -> float:
+def train_model(dataloader: dict, model, loss_fn, optimizer, scheduler) -> float:
     """
     Trains model.
 
@@ -117,38 +143,51 @@ def train_model(dataloader: dict, model, loss_fn, optimizer) -> float:
         optimizer: Used to optimize parameters
     """
 
-    # Total sum of loss
-    total_loss = 0
+    total_preds = []
+    total_targets = []
+    losses = []
 
-    # Number of batches trained
-    batch_count = 0
-
-    for data in dataloader["train_dataloader"]:
+    for data in dataloader["train"]:
         # Split data to input and output
-        x, y = data
+        x = data
+        y = data["answerCode"]
 
         # Get predicted output with input
         y_hat = model(x)
 
         # Get loss using predicted output
-        loss = loss_fn(y, torch.squeeze(y_hat))
+        loss = loss_fn(y_hat, y.float())
 
-        # Set the gradients of all optimized parameters to zero
-        optimizer.zero_grad()
+        loss = loss[:, -1]
+        loss = torch.mean(loss)
 
         # Computes the gradient of current parameters
         loss.backward()
 
+        nn.utils.clip_grad_norm_(model.parameters(), 10)
+
         # Optimize parameters
         optimizer.step()
 
-        # Get cumulative loss and count
-        total_loss += loss.clone().detach()
-        batch_count += 1
+        # Set the gradients of all optimized parameters to zero
+        optimizer.zero_grad()
 
-    average_loss = total_loss / batch_count
+        y_hat = sigmoid(y_hat[:, -1])
+        y = y[:, -1]
 
-    return average_loss.item()
+        total_preds.append(y_hat.detach())
+        total_targets.append(y.detach())
+        losses.append(loss.detach())
+
+    total_targets = torch.concat(total_targets).numpy()
+    total_preds = torch.concat(total_preds).numpy()
+
+    auc = roc_auc_score(y_true=total_targets, y_score=total_preds)
+    acc = accuracy_score(
+        y_true=total_targets, y_pred=np.where(total_preds >= 0.5, 1, 0)
+    )
+
+    return auc, acc
 
 
 def validate_model(dataloader: dict, model, loss_fn) -> float:
@@ -161,31 +200,42 @@ def validate_model(dataloader: dict, model, loss_fn) -> float:
         loss_fn: Used to find the loss between two tensors
     """
 
-    # Total sum of loss
-    total_loss = 0
-
-    # Number of batches trained
-    batch_count = 0
+    total_preds = []
+    total_targets = []
+    losses = []
 
     # No learning from validation data
     with torch.no_grad():
-        for data in dataloader["valid_dataloader"]:
+        for data in dataloader["valid"]:
             # Split data to input and output
-            x, y = data
+            x = data
+            y = data["answerCode"]
 
             # Get predicted output with input
             y_hat = model(x)
 
             # Get loss using predicted output
-            loss = loss_fn(y, torch.squeeze(y_hat))
+            loss = loss_fn(y_hat, y.float())
 
-            # Get cumulative loss and count
-            total_loss += loss
-            batch_count += 1
+            loss = loss[:, -1]
+            loss = torch.mean(loss)
 
-    average_loss = total_loss / batch_count
+            y_hat = sigmoid(y_hat[:, -1])
+            y = y[:, -1]
 
-    return average_loss.item()
+            total_preds.append(y_hat.detach())
+            total_targets.append(y.detach())
+            losses.append(loss.detach())
+
+    total_targets = torch.concat(total_targets).numpy()
+    total_preds = torch.concat(total_preds).numpy()
+
+    auc = roc_auc_score(y_true=total_targets, y_score=total_preds)
+    acc = accuracy_score(
+        y_true=total_targets, y_pred=np.where(total_preds >= 0.5, 1, 0)
+    )
+
+    return auc, acc
 
 
 def test_model(dataloader: dict, model) -> list:

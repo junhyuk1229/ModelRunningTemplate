@@ -11,31 +11,50 @@
         "ensemble": "ensemble"
     },
 
+    "file_name": {
+        "train": "train_data",
+        "test": "test_data"
+    },
+
     "choose_columns": [
-        "user_id",
-        "isbn",
-        "rating",
-        "age",
-        "year_of_publication"
+        "userID",
+        "assessmentItemID",
+        "testId",
+        "answerCode",
+        "KnowledgeTag"
     ],
 
     "index_columns": [
-        "user_id",
-        "isbn"
+        "assessmentItemID",
+        "testId",
+        "KnowledgeTag"
     ],
 
-    "predict_column": "rating",
+    "predict_column": "answerCode",
 
     "run_model":    {
-        "name": "MLP",
-        "loss_fn": "RMSE",
+        "name": "LSTM",
+        "loss_fn": "BCEWLL",
         "optimizer": "ADAM",
-        "epoch": 10,
-        "learn_rate": 0.001
+        "epoch": 20,
+        "learn_rate": 0.0001
     },
 
     "mlp":  {
         "layer_num": 3,
         "layer_dim": [3, 2]
-    }
+    },
+
+    "lstm": {
+        "hidden_dim": 64,
+        "n_layers": 2,
+        "input_dim": 21,
+        "lstm_input_dim": 64
+    },
+
+    "max_seq_len": 20,
+
+    "seed": 42,
+
+    "device": "cuda"
 }

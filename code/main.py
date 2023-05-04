@@ -1,12 +1,18 @@
 from src.setup import setup
-from src.data_process import (
+from src.data import (
     process_data,
     data_split,
     create_datasets,
     create_dataloader,
 )
-from src.get_model import create_model
-from src.run_model import run_model
+from src.model import create_model
+from src.run import run_model
+
+
+import numpy as np
+import random
+import torch
+import os
 
 
 def main() -> None:
@@ -26,10 +32,12 @@ def main() -> None:
     dataloader = create_dataloader(dataset)
 
     # Create model
-    model = create_model(general_settings)
+    model = create_model(data, general_settings)
 
     # Run model
     predicted_data = run_model(dataloader, general_settings, model, save_settings)
+
+    return
 
     # Save predicted data as csv
     save_settings.save_submit(data, predicted_data)

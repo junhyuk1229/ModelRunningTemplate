@@ -31,12 +31,12 @@ def get_general_setting(folder_path: str) -> dict:
     return settings
 
 
-def get_unprocessed_data(data_path: str) -> dict:
+def get_unprocessed_data(folder_path, settings) -> dict:
     """
     Gets unprocessed data as dataframe and returns it in a dictionary.
 
     Parameters:
-        data_path(str): The path to the data folder.
+        settings(str): The path to the data folder.
 
     Returns:
         data(dict): Dictionary containing the unprocessed dataframes.
@@ -44,15 +44,19 @@ def get_unprocessed_data(data_path: str) -> dict:
 
     data = dict()
 
+    # Data path to data file
+    data_path = os.path.join(folder_path, settings["path"]["data"])
+
     # Read csv files
-    data["book_data"] = pd.read_csv(os.path.join(data_path, "books.csv"))
-    data["user_data"] = pd.read_csv(os.path.join(data_path, "users.csv"))
-    data["train_ratings"] = pd.read_csv(os.path.join(data_path, "train_ratings.csv"))
-    data["test_ratings"] = pd.read_csv(os.path.join(data_path, "test_ratings.csv"))
-    data["raw_test_ratings"] = data["test_ratings"].copy(deep=True)
-    data["sample_submission"] = pd.read_csv(
-        os.path.join(data_path, "sample_submission.csv")
-    )
+    for file in os.listdir(data_path):
+        if not file.endswith(".csv"):
+            continue
+
+        data[f"{file[:-4]}"] = pd.read_csv(os.path.join(data_path, file))
+
+    for change_name, curr_name in settings["file_name"].items():
+        data[change_name] = data[curr_name]
+        del data[curr_name]
 
     return data
 
@@ -184,6 +188,16 @@ class SaveSetting:
         valid_df.to_csv(valid_path, index=False)
 
 
+def set_seeds(seed: int = 42):
+    # 랜덤 시드를 설정하여 매 코드를 실행할 때마다 동일한 결과를 얻게 합니다.
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+
+
 def setup() -> tuple[dict, dict, SaveSetting]:
     """
     Returns setting and unprocessed data.
@@ -203,16 +217,20 @@ def setup() -> tuple[dict, dict, SaveSetting]:
     # Import settings
     general_settings = get_general_setting(folder_path)
 
+    if not torch.cuda.is_available() and general_settings["cuda"]:
+        print("Cuda not Found")
+        print("Setting Device to CPU")
+        general_settings["device"] = "cpu"
+
+    set_seeds(general_settings["seed"])
+
     print("Loaded General Settings!")
     print()
-
-    # Data path to data file
-    data_path = os.path.join(folder_path, general_settings["path"]["data"])
 
     print("Getting Unprocessed Data...")
 
     # Import data
-    data = get_unprocessed_data(data_path)
+    data = get_unprocessed_data(folder_path, general_settings)
 
     print("Got Unprocessed Data!")
     print()
