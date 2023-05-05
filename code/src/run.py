@@ -149,7 +149,7 @@ def train_model(
     dataloader: dict, model, loss_fn, optimizer, scheduler, settings
 ) -> float:
     """
-    Trains model.
+    Trains model using train data.
 
     Parameters:
         dataloader(dict): Dictionary containing the dictionary.
@@ -287,7 +287,7 @@ def test_model(dataloader: dict, model, settings) -> list:
 
 def get_df_result(dataloader, model, loss_fn, settings):
     """
-
+    Gets prediction to get as output csv
 
     Parameters:
         dataloader(dict): Dictionary containing the dictionary.

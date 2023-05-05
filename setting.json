@@ -26,13 +26,15 @@
         "assessmentItemID",
         "testId",
         "answerCode",
-        "KnowledgeTag"
+        "KnowledgeTag",
+        "big_tag"
     ],
 
     "index_columns": [
         "assessmentItemID",
         "testId",
-        "KnowledgeTag"
+        "KnowledgeTag",
+        "big_tag"
     ],
 
     "predict_column": "answerCode",

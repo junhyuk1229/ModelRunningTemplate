@@ -1,5 +1,5 @@
 import pandas as pd
-from .data_modify import age_average_fill_na, average_fill_na
+from .data_modify import age_average_fill_na, average_fill_na, create_feature_big_div
 from sklearn.preprocessing import LabelEncoder
 
 
@@ -56,6 +56,8 @@ def process_lstm(data: dict) -> None:
     # Order data by user and time
     data["train"] = data["train"].sort_values(by=["userID", "Timestamp"], axis=0)
     data["test"] = data["test"].sort_values(by=["userID", "Timestamp"], axis=0)
+
+    create_feature_big_div(data)
 
     return
 
