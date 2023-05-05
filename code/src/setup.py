@@ -208,7 +208,15 @@ class SaveSetting:
 
         return
 
-    def save_statedict(self, model, train: float, valid: float, settings: dict) -> None:
+    def save_statedict(
+        self,
+        model,
+        train_final_auc: float,
+        train_final_acc: float,
+        valid_final_auc: float,
+        valid_final_acc: float,
+        settings: dict,
+    ) -> None:
         """
         Saves model's state dict and extra information
 
@@ -227,8 +235,10 @@ class SaveSetting:
         torch.save(
             {
                 "state_dict": model.state_dict(),
-                "train": train,
-                "valid": valid,
+                "train_acc": train_final_acc,
+                "train_auc": train_final_auc,
+                "valid_acc": valid_final_acc,
+                "valid_auc": valid_final_auc,
                 "settings": settings,
             },
             state_dict_path,

@@ -101,17 +101,18 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
     print("Getting Final Results...")
 
     # Get final results
-    train_df, train_final_loss = get_df_result(
-        dataloader["train_dataloader"], model, loss_fn
+    train_df, train_final_auc, train_final_acc = get_df_result(
+        dataloader["train"], model, loss_fn, settings
     )
-    valid_df, valid_final_loss = get_df_result(
-        dataloader["valid_dataloader"], model, loss_fn
+    valid_df, valid_final_auc, valid_final_acc = get_df_result(
+        dataloader["valid"], model, loss_fn, settings
     )
 
     save_settings.save_train_valid(train_df, valid_df)
 
     print(
-        f"Final results:\tTrain loss: {train_final_loss}\tValid loss: {valid_final_loss}"
+        f"Final results:\tTrain AUC: {train_final_auc}\tTrain ACC: {train_final_acc}\n"
+        + f"Final results:\tValid AUC: {valid_final_auc}\tValid ACC: {valid_final_acc}\n"
     )
 
     print("Got Final Results!")
@@ -121,7 +122,14 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
 
     # Save model and state_dict, loss, settings
     save_settings.save_model(model)
-    save_settings.save_statedict(model, train_final_loss, valid_final_loss, settings)
+    save_settings.save_statedict(
+        model,
+        train_final_auc,
+        train_final_acc,
+        valid_final_auc,
+        valid_final_acc,
+        settings,
+    )
 
     print("Saved Model/State Dict!")
     print()
@@ -277,7 +285,6 @@ def test_model(dataloader: dict, model, settings) -> list:
     return predicted_list
 
 
-'''
 def get_df_result(dataloader, model, loss_fn, settings):
     """
 
@@ -289,39 +296,37 @@ def get_df_result(dataloader, model, loss_fn, settings):
         optimizer: Used to optimize parameters
     """
 
-    # Total sum of loss
-    total_loss = 0
-
-    # Number of batches trained
-    batch_count = 0
+    total_preds = []
+    total_targets = []
 
     # Create dataframe to save
-    column_list = ["user_id", "isbn", "rating", "p_rating"]
-    save_df = pd.DataFrame({c: [] for c in column_list})
 
-    for data in dataloader:
-        # Split data to input and output
-        x = data
+    with torch.no_grad():
+        for data in dataloader:
+            # Data to device
+            data = {k: v.to(settings["device"]) for k, v in data.items()}
 
-        # Get predicted output with input
-        y_hat = model(x)
+            # Split data to input and output
+            x = data
+            y = data[settings["predict_column"]]
 
-        # Update dataframe
-        x = pd.DataFrame(x, columns=["user_id", "isbn", "age", "year"])
-        x = x[["user_id", "isbn"]]
-        x["rating"] = y
-        x["p_rating"] = y_hat.detach().numpy()
-        save_df = pd.concat([save_df, x])
+            # Get predicted output with input
+            y_hat = model(x)
 
-        # Get loss using predicted output
-        loss = loss_fn(y, torch.squeeze(y_hat))
+            y_hat = sigmoid(y_hat[:, -1])
+            y = y[:, -1]
 
-        # Get cumulative loss and count
-        total_loss += loss.clone().detach()
-        batch_count += 1
+            total_preds.append(y_hat)
+            total_targets.append(y)
 
-    # Get average loss
-    average_loss = total_loss / batch_count
+    total_targets = torch.concat(total_targets).cpu().numpy()
+    total_preds = torch.concat(total_preds).cpu().numpy()
 
-    return save_df, average_loss.item()
-'''
+    auc = roc_auc_score(y_true=total_targets, y_score=total_preds)
+    acc = accuracy_score(
+        y_true=total_targets, y_pred=np.where(total_preds >= 0.5, 1, 0)
+    )
+
+    save_df = pd.Series(total_targets)
+
+    return save_df, auc, acc
