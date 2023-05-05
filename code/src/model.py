@@ -1,5 +1,6 @@
 from .model_folder.model_mlp import MultiLayerPerceptronClass
 from .model_folder.model_lstm import LongShortTermMemory
+from .model_folder.model_lstmattn import LongShortTermMemoryAttention
 
 
 def create_model(data: dict, settings: dict):
@@ -16,8 +17,12 @@ def create_model(data: dict, settings: dict):
 
     if settings["model_name"].lower() == "mlp":
         model = MultiLayerPerceptronClass(settings, input_dim=settings["column_num"])
-    if settings["model_name"].lower() == "lstm":
+    elif settings["model_name"].lower() == "lstm":
         model = LongShortTermMemory(data, settings)
+    elif settings["model_name"].lower() == "lstm_attn":
+        model = LongShortTermMemoryAttention(data, settings)
+    else:
+        print("No model found ending program")
 
     print("Created Model!")
     print()

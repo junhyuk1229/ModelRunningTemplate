@@ -327,6 +327,6 @@ def get_df_result(dataloader, model, loss_fn, settings):
         y_true=total_targets, y_pred=np.where(total_preds >= 0.5, 1, 0)
     )
 
-    save_df = pd.Series(total_targets)
+    save_df = pd.Series(total_preds)
 
     return save_df, auc, acc

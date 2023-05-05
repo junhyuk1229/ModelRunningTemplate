@@ -28,24 +28,32 @@ def get_df(statedict_path):
 
         return None
 
-    train_list = []
-    valid_list = []
+    train_acc_list = []
+    train_auc_list = []
+    valid_acc_list = []
+    valid_auc_list = []
     model_name = []
+    settings = []
     for p in statedict_path_list:
         temp_dict = torch.load(os.path.join(statedict_path, p))
-        train_list.append(temp_dict["train"])
-        valid_list.append(temp_dict["valid"])
-        model_name.append(temp_dict["settings"]["run_model"]["name"].lower())
+        train_acc_list.append(temp_dict["train_acc"])
+        train_auc_list.append(temp_dict["train_auc"])
+        valid_acc_list.append(temp_dict["valid_acc"])
+        valid_auc_list.append(temp_dict["valid_auc"])
+        model_name.append(temp_dict["settings"]["model_name"].lower())
+        settings.append(temp_dict["settings"])
 
     statedict_path_list = [p[:15] for p in statedict_path_list]
 
     result_df = pd.DataFrame(statedict_path_list, columns=["file_name"])
 
-    result_df["train_loss"] = train_list
-    result_df["valid_loss"] = valid_list
     result_df["model_name"] = model_name
+    result_df["train_acc_list"] = train_acc_list
+    result_df["train_auc_list"] = train_auc_list
+    result_df["valid_acc_list"] = valid_acc_list
+    result_df["valid_auc_list"] = valid_auc_list
 
-    return result_df
+    return result_df, settings
 
 
 def clear_data(path_list):
@@ -107,16 +115,24 @@ def delete_model(result_df, input_str, path_list):
 def ensemble(result_df, input_str, path_list, ensemble_path):
     select_rows = list(map(int, input_str[1].split(sep=",")))
     ensemble_name = result_df["file_name"][select_rows].T.values
-    train_list = result_df["train_loss"][select_rows].T.values
-    valid_list = result_df["valid_loss"][select_rows].T.values
+    train_acc_list = result_df["train_acc_list"][select_rows].T.values
+    train_auc_list = result_df["train_auc_list"][select_rows].T.values
+    valid_acc_list = result_df["valid_acc_list"][select_rows].T.values
+    valid_auc_list = result_df["valid_auc_list"][select_rows].T.values
 
     train_df = []
     valid_df = []
     for file_name in ensemble_name:
         train_path = os.path.join(path_list[-2], file_name) + "_train.csv"
         valid_path = os.path.join(path_list[-1], file_name) + "_valid.csv"
-        train_df.append(pd.read_csv(train_path)["p_rating"])
-        valid_df.append(pd.read_csv(valid_path)["p_rating"])
+        train_df.append(pd.read_csv(train_path))
+        valid_df.append(pd.read_csv(valid_path))
+
+    print(train_df)
+
+    train_df[0][0]
+
+    return
 
     if len(input_str) < 3:
         weight_list = [1 / len(select_rows)] * len(select_rows)
@@ -206,7 +222,7 @@ def main() -> None:
         valid_path,
     ]
 
-    result_df = get_df(statedict_path)
+    result_df, settings = get_df(statedict_path)
 
     if result_df is None:
         return
@@ -250,6 +266,9 @@ def main() -> None:
             head_num = int(input_str[1])
         elif input_str[0] == "ensemble":
             ensemble(result_df, input_str, path_list, ensemble_path)
+        elif input_str[0] == "settings":
+            print(settings[int(input_str[1])])
+            input()
         else:
             print("Unrecognised command...\nExiting...\n")
             break

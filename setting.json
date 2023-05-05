@@ -43,21 +43,21 @@
     "train_valid_split": 0.7,
 
 
-    "model_name": "LSTM",
+    "model_name": "LSTM_attn",
     "loss_fn": "BCEWLL",
     "optimizer": "ADAM",
     "scheduler": "plateau",
-    "epoch": 20,
-    "batch_size": 64,
+    "epoch": 30,
+    "batch_size": 16,
     "num_workers": 1,
 
 
     "adam": {
-        "learn_rate": 0.0001,
+        "learn_rate": 0.00008,
         "weight_decay": 0.01
     },
 
-
+    
     "plateau":   {
         "patience": 10,
         "factor": 0.5,
@@ -72,5 +72,16 @@
         "input_dim": 21,
         "lstm_input_dim": 64,
         "max_seq_len": 20
+    },
+
+    "lstm_attn":    {
+        "hidden_dim": 64,
+        "n_layers": 2,
+        "n_heads": 2,
+        "input_dim": 21,
+        "lstm_input_dim": 64,
+        "drop_out": 0.2,
+        "max_seq_len": 20
     }
+
 }

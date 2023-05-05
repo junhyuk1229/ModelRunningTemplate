@@ -1,5 +1,5 @@
 import pandas as pd
-from .data_modify import age_average_fill_na, average_fill_na, create_feature_big_div
+from .data_modify import age_average_fill_na, average_fill_na, create_feature_big_tag
 from sklearn.preprocessing import LabelEncoder
 
 
@@ -57,7 +57,17 @@ def process_lstm(data: dict) -> None:
     data["train"] = data["train"].sort_values(by=["userID", "Timestamp"], axis=0)
     data["test"] = data["test"].sort_values(by=["userID", "Timestamp"], axis=0)
 
-    create_feature_big_div(data)
+    create_feature_big_tag(data)
+
+    return
+
+
+def process_lstm_attn(data) -> None:
+    # Order data by user and time
+    data["train"] = data["train"].sort_values(by=["userID", "Timestamp"], axis=0)
+    data["test"] = data["test"].sort_values(by=["userID", "Timestamp"], axis=0)
+
+    create_feature_big_tag(data)
 
     return
 
@@ -76,8 +86,13 @@ def process_data(data: dict, settings: dict) -> None:
     # Modify/Create columns in data
     if settings["model_name"].lower() == "mlp":
         process_mlp(data)
-    if settings["model_name"].lower() == "lstm":
+    elif settings["model_name"].lower() == "lstm":
         process_lstm(data)
+    elif settings["model_name"].lower() == "lstm_attn":
+        process_lstm_attn(data)
+    else:
+        print("Found no processing function...")
+        print("Not processing any data...")
 
     print("Modified Data!")
     print()
