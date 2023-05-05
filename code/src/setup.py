@@ -1,29 +1,32 @@
 from datetime import datetime
 import json
+import numpy as np
 import os
 import pandas as pd
+import random
 import torch
 
 
-# Setting file name
+# Settings file name
 SETTING_FILE = "setting.json"
 
 
 def get_general_setting(folder_path: str) -> dict:
     """
-    Returns the setting.json file as a dictionary.
+    Returns the setting.json file as a dictionary
 
     Parameters:
-        folder_path(str): The path to the json file.
+        folder_path(str): String containing the path to the main folder
 
     Returns:
-        settings(dict): Dictionary containing the settings.
+        settings(dict): Dictionary containing the settings
     """
-
     with open(os.path.join(folder_path, SETTING_FILE)) as f:
         try:
+            # Load file
             settings = json.load(f)
         except:
+            # If file not found
             print("Running code in wrong folder.")
             print("Run python file in ModelRunningTemplate folder")
             return 1
@@ -31,60 +34,98 @@ def get_general_setting(folder_path: str) -> dict:
     return settings
 
 
-def get_unprocessed_data(folder_path, settings) -> dict:
+def set_basic_settings(settings: dict) -> None:
     """
-    Gets unprocessed data as dataframe and returns it in a dictionary.
+    Setups basic settings for total use
 
     Parameters:
-        settings(str): The path to the data folder.
+        settings(dict): Dictionary containing the settings
+    """
+    # Check if cuda is available
+    if not torch.cuda.is_available() and settings["cuda"] == "cpu":
+        print("Cuda not Found")
+        print("Setting Device to CPU")
+        # If not change device to cpu
+        settings["device"] = "cpu"
+
+    # Get seed from settings
+    seed = settings["seed"]
+
+    # Apply settings to all randomization
+    # All results will be fixed
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+
+    return
+
+
+def get_unprocessed_data(folder_path: str, settings: dict) -> dict:
+    """
+    Gets unprocessed train/test data as dataframe and returns it in a dictionary
+
+    Parameters:
+        folder_path(str): String containing the path to the main folder
+        settings(dict): Dictionary containing the settings
 
     Returns:
-        data(dict): Dictionary containing the unprocessed dataframes.
+        data(dict): Dictionary containing the unprocessed dataframes
     """
 
     data = dict()
 
-    # Data path to data file
+    # Path to data file
     data_path = os.path.join(folder_path, settings["path"]["data"])
 
-    # Read csv files
-    for file in os.listdir(data_path):
-        if not file.endswith(".csv"):
-            continue
-
-        data[f"{file[:-4]}"] = pd.read_csv(os.path.join(data_path, file))
-
-    for change_name, curr_name in settings["file_name"].items():
-        data[change_name] = data[curr_name]
-        del data[curr_name]
+    # Loop through file names and get raw data
+    for name, file in settings["file_name"].items():
+        data[name] = pd.read_csv(os.path.join(data_path, file + ".csv"))
 
     return data
 
 
 class SaveSetting:
-    def __init__(self, folder_path, general_settings):
-        self.log_folder_path = os.path.join(
-            folder_path, general_settings["path"]["log"]
-        )
-        self.model_folder_path = os.path.join(
-            folder_path, general_settings["path"]["model"]
-        )
+    """
+    Used to control most files and log saving
+
+    Attributes:
+        [folder name]_folder_path(str): Path to the folder
+        name(str): Contains the file name that is going to be used
+        log_file(None/_io.TextIOWrapper): Contains loaded log file. Contains 'None' if not loaded
+    """
+
+    def __init__(self, folder_path: str, settings: dict):
+        """
+        Initializes SaveSetting
+
+        Parameters:
+            folder_path(str): String containing the path to the main folder
+            settings(dict): Dictionary containing the settings
+        """
+        # Setup folder paths
+        self.log_folder_path = os.path.join(folder_path, settings["path"]["log"])
+        self.model_folder_path = os.path.join(folder_path, settings["path"]["model"])
         self.statedict_folder_path = os.path.join(
-            folder_path, general_settings["path"]["state_dict"]
+            folder_path, settings["path"]["state_dict"]
         )
-        self.submit_folder_path = os.path.join(
-            folder_path, general_settings["path"]["submit"]
-        )
-        self.train_folder_path = os.path.join(
-            folder_path, general_settings["path"]["train"]
-        )
-        self.valid_folder_path = os.path.join(
-            folder_path, general_settings["path"]["valid"]
-        )
+        self.submit_folder_path = os.path.join(folder_path, settings["path"]["submit"])
+        self.train_folder_path = os.path.join(folder_path, settings["path"]["train"])
+        self.valid_folder_path = os.path.join(folder_path, settings["path"]["valid"])
+
+        # File name
         self.name = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        # Log file
         self.log_file = None
+
+        # Create missing directories
         self.create_dir()
-        self.start_log(general_settings)
+
+        # Start logging and write first part of the file
+        self.start_log(settings)
 
     def create_dir(self) -> None:
         """
@@ -104,58 +145,85 @@ class SaveSetting:
             os.mkdir(self.valid_folder_path)
         return
 
-    def append_log(self, input_obj) -> None:
+    def append_log(self, input_str: str) -> None:
         """
-        Appends the input string to the log
+        Appends string to log file
+
+        Parameters:
+            input_str(str): String that will be appended to the log
         """
+        # If log file is not opened open log file and save io
         if self.log_file is None:
+            # Get file path
             log_file_path = os.path.join(self.log_folder_path, self.name) + ".txt"
+
+            # Open file
             self.log_file = open(log_file_path, "a")
 
-        self.log_file.writelines(input_obj)
+        # Write string to log file
+        self.log_file.writelines(input_str)
 
         return
 
-    def start_log(self, general_settings) -> None:
+    def start_log(self, settings: dict) -> None:
         """
-        Starts log by writing initial settings
+        Starts log and prints pre-written starting message
+
+        Parameters:
+            settings(dict): Dictionary containing the settings
         """
+        # Starts writing log as new file
         with open(os.path.join(self.log_folder_path, self.name) + ".txt", "w") as f:
             f.write("Choosen Columns:\t")
-            f.write(", ".join(general_settings["choose_columns"]) + "\n")
+            f.write(", ".join(settings["choose_columns"]) + "\n")
             f.write("Indexed Columns:\t")
-            f.write(", ".join(general_settings["index_columns"]) + "\n")
-            f.write("Model Configuration:\n")
-            for index, value in general_settings["run_model"].items():
-                f.write(f"\t{index}:\t{value}\n")
+            f.write(", ".join(settings["index_columns"]) + "\n")
             f.write("=" * 30 + "\n\n")
+
         return
 
     def close_log(self) -> None:
         """
         Ends log if log is opened
         """
+        # If log is still opened
         if self.log_file is not None:
+            # Close log
             self.log_file.close()
 
         return
 
     def save_model(self, model) -> None:
         """
-        Saves model.
+        Saves model to file
+
+        Parameters:
+            model(): Model that is saved
         """
-        temp_path = os.path.join(self.model_folder_path, self.name)
-        temp_path += f"_model"
-        torch.save(model, temp_path)
+        # Get model path
+        model_path = os.path.join(self.model_folder_path, self.name + f"_model")
+
+        # Save model to path
+        torch.save(model, model_path)
 
         return
 
-    def save_statedict(self, model, train, valid, settings) -> None:
+    def save_statedict(self, model, train: float, valid: float, settings: dict) -> None:
         """
         Saves model's state dict and extra information
+
+        Parameters:
+            model(): Model to save state dict
+            train(float): Train loss
+            valid(float): Valid loss
+            settings(dict): Dictionary containing the settings
         """
-        temp_path = os.path.join(self.statedict_folder_path, self.name)
-        temp_path += f"_statedict"
+        # Get path to save on
+        state_dict_path = os.path.join(
+            self.statedict_folder_path, self.name + f"_statedict"
+        )
+
+        # Save all data to path
         torch.save(
             {
                 "state_dict": model.state_dict(),
@@ -163,22 +231,40 @@ class SaveSetting:
                 "valid": valid,
                 "settings": settings,
             },
-            temp_path,
+            state_dict_path,
         )
 
         return
 
-    def save_submit(self, data, prediction) -> None:
-        # Create prediction
-        data["raw_test_ratings"]["rating"] = prediction
+    def save_submit(self, prediction: list) -> None:
+        """
+        Saves test result to be submitted as csv
+
+        Parameters:
+            prediction(list): test result(y_hat) saved as a list
+        """
+        # Create dataframe to save as csv
+        submit_df = pd.DataFrame(prediction, columns=["prediction"])
+        submit_df["id"] = [i for i in range(len(submit_df))]
+        submit_df = submit_df[["id", "prediction"]]
+
+        # Get save path
+        submit_path = os.path.join(self.submit_folder_path, self.name + ".csv")
 
         # Save prediction
-        temp_path = os.path.join(self.submit_folder_path, self.name + ".csv")
-        data["raw_test_ratings"].to_csv(temp_path, index=False)
+        submit_df.to_csv(submit_path, index=False)
 
         return
 
-    def save_train_valid(self, train_df, valid_df) -> None:
+    def save_train_valid(self, train_df: pd.DataFrame, valid_df: pd.DataFrame) -> None:
+        """
+        Saves train and valid results as dataframes
+        This is later used to predict the ensemble loss
+
+        Parameters:
+            train_df(pd.DataFrame): Dataframe containing all train data and predicted(y_hat) data
+            valid_df(pd.DataFrame): Dataframe containing all valid data and predicted(y_hat) data
+        """
         # Create path
         train_path = os.path.join(self.train_folder_path, self.name + "_train.csv")
         valid_path = os.path.join(self.valid_folder_path, self.name + "_valid.csv")
@@ -188,23 +274,13 @@ class SaveSetting:
         valid_df.to_csv(valid_path, index=False)
 
 
-def set_seeds(seed: int = 42):
-    # 랜덤 시드를 설정하여 매 코드를 실행할 때마다 동일한 결과를 얻게 합니다.
-    os.environ["PYTHONHASHSEED"] = str(seed)
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
-
-
 def setup() -> tuple[dict, dict, SaveSetting]:
     """
-    Returns setting and unprocessed data.
+    Setups settings and returns setting/unprocessed/saving data.
 
     Returns:
-        data(dict): Dictionary containing the unprocessed dataframes.
-        settings(dict): Dictionary containing the settings.
+        data(dict): Dictionary containing the unprocessed data dataframes.
+        settings(dict): Dictionary containing the settings
         save_settings(SaveSetting): Class used to save files(log, model, result).
     """
 
@@ -217,19 +293,20 @@ def setup() -> tuple[dict, dict, SaveSetting]:
     # Import settings
     general_settings = get_general_setting(folder_path)
 
-    if not torch.cuda.is_available() and general_settings["cuda"]:
-        print("Cuda not Found")
-        print("Setting Device to CPU")
-        general_settings["device"] = "cpu"
-
-    set_seeds(general_settings["seed"])
-
     print("Loaded General Settings!")
+    print()
+
+    print("Setting General Settings...")
+
+    # Set basic settings
+    set_basic_settings(general_settings)
+
+    print("Set General Setting!")
     print()
 
     print("Getting Unprocessed Data...")
 
-    # Import data
+    # Import unprocessed data
     data = get_unprocessed_data(folder_path, general_settings)
 
     print("Got Unprocessed Data!")
@@ -237,7 +314,7 @@ def setup() -> tuple[dict, dict, SaveSetting]:
 
     print("Getting Save Settings...")
 
-    # Get save data
+    # Get save settings
     save_settings = SaveSetting(folder_path, general_settings)
 
     print("Got Save Settings!")

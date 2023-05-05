@@ -9,38 +9,30 @@ from src.model import create_model
 from src.run import run_model
 
 
-import numpy as np
-import random
-import torch
-import os
-
-
 def main() -> None:
-    # Get settings and raw data from files (getcwd changes to entire folder)
-    data, general_settings, save_settings = setup()
+    # Get settings and raw data from files (os.getcwd changes to entire folder)
+    data, settings, save_settings = setup()
 
     # Process raw data
-    process_data(data, general_settings)
+    process_data(data, settings)
 
     # Split data
-    data_split(data, general_settings)
+    data_split(data, settings)
 
     # Load datasets
-    dataset = create_datasets(data, general_settings)
+    dataset = create_datasets(data, settings)
 
     # Create dataloader
-    dataloader = create_dataloader(dataset)
+    dataloader = create_dataloader(dataset, settings)
 
     # Create model
-    model = create_model(data, general_settings)
+    model = create_model(data, settings)
 
     # Run model
-    predicted_data = run_model(dataloader, general_settings, model, save_settings)
-
-    return
+    predicted_data = run_model(dataloader, settings, model, save_settings)
 
     # Save predicted data as csv
-    save_settings.save_submit(data, predicted_data)
+    save_settings.save_submit(predicted_data)
 
     # Close log if opened
     save_settings.close_log()

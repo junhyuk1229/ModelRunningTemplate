@@ -32,24 +32,31 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
     """
 
     # Set loss function
-    if settings["run_model"]["loss_fn"].lower() == "rmse":
+    if settings["loss_fn"].lower() == "rmse":
         loss_fn = RMSELoss()
-    elif settings["run_model"]["loss_fn"].lower() == "mse":
+    elif settings["loss_fn"].lower() == "mse":
         loss_fn = MSELoss()
-    elif settings["run_model"]["loss_fn"].lower() == "bcewll":
+    elif settings["loss_fn"].lower() == "bcewll":
         loss_fn = torch.nn.BCEWithLogitsLoss(reduction="none")
 
     # Set optimizer
-    if settings["run_model"]["optimizer"].lower() == "adam":
+    if settings["optimizer"].lower() == "adam":
         optimizer = Adam(
             model.parameters(),
-            lr=settings["run_model"]["learn_rate"],
-            weight_decay=0.01,
+            lr=settings["adam"]["learn_rate"],
+            weight_decay=settings["adam"]["weight_decay"],
         )
 
-    scheduler = ReduceLROnPlateau(
-        optimizer, patience=10, factor=0.5, mode="max", verbose=True
-    )
+        optimizer.zero_grad()
+
+    if settings["scheduler"].lower() == "plateau":
+        scheduler = ReduceLROnPlateau(
+            optimizer,
+            patience=settings["plateau"]["patience"],
+            factor=settings["plateau"]["factor"],
+            mode=settings["plateau"]["mode"],
+            verbose=settings["plateau"]["verbose"],
+        )
 
     print("Training Model...")
     print()
@@ -57,20 +64,20 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
     best_auc = -1
 
     # Set epoch for training
-    for epoch in range(settings["run_model"]["epoch"]):
+    for epoch in range(settings["epoch"]):
         # Change model state to train
         model.train()
 
         # Get average loss while training
         train_auc, train_acc = train_model(
-            dataloader, model, loss_fn, optimizer, scheduler
+            dataloader, model, loss_fn, optimizer, scheduler, settings
         )
 
         # Change model state to evaluation
         model.eval()
 
         # Get average loss using validation set
-        valid_acc, valid_auc = validate_model(dataloader, model, loss_fn)
+        valid_auc, valid_acc = validate_model(dataloader, model, loss_fn, settings)
 
         if valid_auc > best_auc:
             best_auc = valid_auc
@@ -90,11 +97,9 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
 
     print("Trained Model!")
     print()
-
-    return
-
+    """
     print("Getting Final Results...")
-
+    
     # Get final results
     train_df, train_final_loss = get_df_result(
         dataloader["train_dataloader"], model, loss_fn
@@ -104,14 +109,14 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
     )
 
     save_settings.save_train_valid(train_df, valid_df)
-
+    
     print(
         f"Final results:\tTrain loss: {train_final_loss}\tValid loss: {valid_final_loss}"
     )
 
     print("Got Final Results!")
     print()
-
+    
     print("Saving Model/State Dict...")
 
     # Save model and state_dict, loss, settings
@@ -120,11 +125,11 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
 
     print("Saved Model/State Dict!")
     print()
-
+    """
     print("Predicting Results...")
 
     # Get predicted data for submission
-    predict_data = test_model(dataloader, model)
+    predict_data = test_model(dataloader, model, settings)
 
     print("Predicted Results!")
     print()
@@ -132,7 +137,9 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
     return predict_data
 
 
-def train_model(dataloader: dict, model, loss_fn, optimizer, scheduler) -> float:
+def train_model(
+    dataloader: dict, model, loss_fn, optimizer, scheduler, settings
+) -> float:
     """
     Trains model.
 
@@ -148,6 +155,9 @@ def train_model(dataloader: dict, model, loss_fn, optimizer, scheduler) -> float
     losses = []
 
     for data in dataloader["train"]:
+        # Data to device
+        data = {k: v.to(settings["device"]) for k, v in data.items()}
+
         # Split data to input and output
         x = data
         y = data["answerCode"]
@@ -179,8 +189,8 @@ def train_model(dataloader: dict, model, loss_fn, optimizer, scheduler) -> float
         total_targets.append(y.detach())
         losses.append(loss.detach())
 
-    total_targets = torch.concat(total_targets).numpy()
-    total_preds = torch.concat(total_preds).numpy()
+    total_targets = torch.concat(total_targets).cpu().numpy()
+    total_preds = torch.concat(total_preds).cpu().numpy()
 
     auc = roc_auc_score(y_true=total_targets, y_score=total_preds)
     acc = accuracy_score(
@@ -190,7 +200,7 @@ def train_model(dataloader: dict, model, loss_fn, optimizer, scheduler) -> float
     return auc, acc
 
 
-def validate_model(dataloader: dict, model, loss_fn) -> float:
+def validate_model(dataloader: dict, model, loss_fn, settings) -> float:
     """
     Uses valid dataloader to get loss of model.
 
@@ -202,11 +212,13 @@ def validate_model(dataloader: dict, model, loss_fn) -> float:
 
     total_preds = []
     total_targets = []
-    losses = []
 
     # No learning from validation data
     with torch.no_grad():
         for data in dataloader["valid"]:
+            # Data to device
+            data = {k: v.to(settings["device"]) for k, v in data.items()}
+
             # Split data to input and output
             x = data
             y = data["answerCode"]
@@ -214,21 +226,14 @@ def validate_model(dataloader: dict, model, loss_fn) -> float:
             # Get predicted output with input
             y_hat = model(x)
 
-            # Get loss using predicted output
-            loss = loss_fn(y_hat, y.float())
-
-            loss = loss[:, -1]
-            loss = torch.mean(loss)
-
             y_hat = sigmoid(y_hat[:, -1])
             y = y[:, -1]
 
             total_preds.append(y_hat.detach())
             total_targets.append(y.detach())
-            losses.append(loss.detach())
 
-    total_targets = torch.concat(total_targets).numpy()
-    total_preds = torch.concat(total_preds).numpy()
+    total_targets = torch.concat(total_targets).cpu().numpy()
+    total_preds = torch.concat(total_preds).cpu().numpy()
 
     auc = roc_auc_score(y_true=total_targets, y_score=total_preds)
     acc = accuracy_score(
@@ -238,7 +243,7 @@ def validate_model(dataloader: dict, model, loss_fn) -> float:
     return auc, acc
 
 
-def test_model(dataloader: dict, model) -> list:
+def test_model(dataloader: dict, model, settings) -> list:
     """
     Use test data to get prediction for submission.
 
@@ -253,19 +258,26 @@ def test_model(dataloader: dict, model) -> list:
     predicted_list = list()
 
     with torch.no_grad():
-        for data in dataloader["test_dataloader"]:
+        for data in dataloader["test"]:
+            # Data to device
+            data = {k: v.to(settings["device"]) for k, v in data.items()}
+
             # Get input data
-            x = data[0]
+            x = data
 
             # Get predicted output with input
             y_hat = model(x)
 
+            y_hat = sigmoid(y_hat[:, -1])
+            y_hat = y_hat.cpu().detach().numpy()
+
             # Add predicted output to list
-            predicted_list.extend(y_hat.squeeze().tolist())
+            predicted_list += list(y_hat)
 
     return predicted_list
 
 
+'''
 def get_df_result(dataloader, model, loss_fn):
     """
 
@@ -289,7 +301,7 @@ def get_df_result(dataloader, model, loss_fn):
 
     for data in dataloader:
         # Split data to input and output
-        x, y = data
+        x = data
 
         # Get predicted output with input
         y_hat = model(x)
@@ -312,3 +324,4 @@ def get_df_result(dataloader, model, loss_fn):
     average_loss = total_loss / batch_count
 
     return save_df, average_loss.item()
+'''

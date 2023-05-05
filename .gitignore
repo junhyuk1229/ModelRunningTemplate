@@ -12,3 +12,6 @@ __pycache__
 /valid
 
 /TODO.txt
+
+/.gitignore
+/.pre-commit-config.yaml
