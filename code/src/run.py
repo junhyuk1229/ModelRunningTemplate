@@ -97,9 +97,9 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
 
     print("Trained Model!")
     print()
-    """
+
     print("Getting Final Results...")
-    
+
     # Get final results
     train_df, train_final_loss = get_df_result(
         dataloader["train_dataloader"], model, loss_fn
@@ -109,14 +109,14 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
     )
 
     save_settings.save_train_valid(train_df, valid_df)
-    
+
     print(
         f"Final results:\tTrain loss: {train_final_loss}\tValid loss: {valid_final_loss}"
     )
 
     print("Got Final Results!")
     print()
-    
+
     print("Saving Model/State Dict...")
 
     # Save model and state_dict, loss, settings
@@ -125,7 +125,7 @@ def run_model(dataloader: dict, settings: dict, model, save_settings):
 
     print("Saved Model/State Dict!")
     print()
-    """
+
     print("Predicting Results...")
 
     # Get predicted data for submission
@@ -160,7 +160,7 @@ def train_model(
 
         # Split data to input and output
         x = data
-        y = data["answerCode"]
+        y = data[settings["predict_column"]]
 
         # Get predicted output with input
         y_hat = model(x)
@@ -221,7 +221,7 @@ def validate_model(dataloader: dict, model, loss_fn, settings) -> float:
 
             # Split data to input and output
             x = data
-            y = data["answerCode"]
+            y = data[settings["predict_column"]]
 
             # Get predicted output with input
             y_hat = model(x)
@@ -278,7 +278,7 @@ def test_model(dataloader: dict, model, settings) -> list:
 
 
 '''
-def get_df_result(dataloader, model, loss_fn):
+def get_df_result(dataloader, model, loss_fn, settings):
     """
 
 
