@@ -72,6 +72,16 @@ def process_lstm_attn(data) -> None:
     return
 
 
+def process_bert(data) -> None:
+    # Order data by user and time
+    data["train"] = data["train"].sort_values(by=["userID", "Timestamp"], axis=0)
+    data["test"] = data["test"].sort_values(by=["userID", "Timestamp"], axis=0)
+
+    create_feature_big_tag(data)
+
+    return
+
+
 def process_data(data: dict, settings: dict) -> None:
     """
     Merges / Drops columns / Indexes from data.
@@ -90,6 +100,8 @@ def process_data(data: dict, settings: dict) -> None:
         process_lstm(data)
     elif settings["model_name"].lower() == "lstm_attn":
         process_lstm_attn(data)
+    elif settings["model_name"].lower() == "bert":
+        process_bert(data)
     else:
         print("Found no processing function...")
         print("Not processing any data...")

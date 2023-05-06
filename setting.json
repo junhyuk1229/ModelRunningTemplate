@@ -43,17 +43,17 @@
     "train_valid_split": 0.7,
 
 
-    "model_name": "LSTM_attn",
+    "model_name": "bert",
     "loss_fn": "BCEWLL",
     "optimizer": "ADAM",
     "scheduler": "plateau",
-    "epoch": 30,
+    "epoch": 40,
     "batch_size": 16,
     "num_workers": 1,
 
 
     "adam": {
-        "learn_rate": 0.00008,
+        "learn_rate": 0.00002,
         "weight_decay": 0.01
     },
 
@@ -81,6 +81,15 @@
         "input_dim": 21,
         "lstm_input_dim": 64,
         "drop_out": 0.2,
+        "max_seq_len": 20
+    },
+
+    "bert": {
+        "hidden_dim": 64,
+        "n_layers": 2,
+        "n_heads": 2,
+        "input_dim": 21,
+        "lstm_input_dim": 64,
         "max_seq_len": 20
     }
 
