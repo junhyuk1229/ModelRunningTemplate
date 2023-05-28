@@ -7,6 +7,7 @@ __pycache__
 
 /log
 /model
+/module/test_module.py
 /state_dict
 /submit
 

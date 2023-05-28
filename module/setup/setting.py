@@ -114,33 +114,6 @@ def create_logger(
     return
 
 
-def get_unprocessed_data(
-    data_path: str, train_file_name: str, test_file_name: str
-) -> dict:
-    """
-    Gets unprocessed data as dataframe and returns it in a dictionary.
-
-    Parameters:
-        data_path(str): The path to the data folder.
-        train_file_name(str): The file name of the train csv file
-        test_file_name(str): The file name of the test csv file
-
-    Returns:
-        u_train_data(pd.DataFrame): Dictionary containing the unprocessed train dataframes.
-        u_test_data(pd.DataFrame): Dictionary containing the unprocessed test dataframes.
-    """
-
-    # Read train df
-    u_train_data = pd.read_csv(os.path.join(data_path, train_file_name))
-    logging.debug("Loaded train data")
-
-    # Read test df
-    u_test_data = pd.read_csv(os.path.join(data_path, test_file_name))
-    logging.debug("Loaded test data")
-
-    return u_train_data, u_test_data
-
-
 def get_argparse_settings() -> argparse.Namespace:
     """
     Get settings from argparse
