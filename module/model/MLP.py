@@ -10,11 +10,11 @@ class MultiLayerPerceptron(nn.Module):
 
     Creates multiple linear layers seperated by a activation function.
     Output will always be a single value.
-    If no layer_dim is given creates a generic dense layer with a single linear layer.
+    If no hidden_dims is given creates a generic dense layer with a single linear layer.
     """
 
-    def __init__(self, input_dim, layer_dim, output_dim):
-        super(MultiLayerPerceptron, self).__init__()
+    def __init__(self, input_dim, hidden_dims, output_dim):
+        super().__init__()
 
         # Input dimension
         self.input_dim = input_dim
@@ -22,20 +22,22 @@ class MultiLayerPerceptron(nn.Module):
         self.output_dim = output_dim
 
         # Layer dimensions
-        self.layer_dim = layer_dim
+        self.hidden_dims = hidden_dims
         # Number of layers
-        self.layer_num = len(self.layer_dim)
+        self.layer_num = len(self.hidden_dims)
 
         # Multiple linear layers
         self.lin_list = nn.Sequential(
-            nn.Linear(self.input_dim, self.layer_dim[0]), nn.ReLU()
+            nn.Linear(self.input_dim, self.hidden_dims[0]), nn.ReLU()
         )
 
         for i in range(self.layer_num - 1):
-            self.lin_list.append(nn.Linear(self.layer_dim[i], self.layer_dim[i + 1]))
+            self.lin_list.append(
+                nn.Linear(self.hidden_dims[i], self.hidden_dims[i + 1])
+            )
             self.lin_list.append(nn.ReLU())
 
-        self.lin_list.append(nn.Linear(self.layer_dim[-1], self.output_dim))
+        self.lin_list.append(nn.Linear(self.hidden_dims[-1], self.output_dim))
 
         self.lin_list.apply(self.init_param)
 
@@ -58,9 +60,37 @@ class MultiLayerPerceptron(nn.Module):
         return y_hat
 
 
-def get_mlp_classifier(**kwargs):
-    return MLPClassifier(kwargs)
+def get_mlp_classifier_sklearn(**kwargs):
+    """
+    Gets MLP Classifier from sklearn.
+
+    Parameters:
+        **kwargs(dict): The arguments passed to the MLP Classifier.
+
+    Returns:
+        model(MLPClassifier): MLP Classifier from .
+    """
+
+    model = MLPClassifier(**kwargs)
+
+    logging.debug(f"Created MLP Classifier model from sklearn")
+
+    return model
 
 
-def get_mlp_regressor(**kwargs):
-    return MLPRegressor(kwargs)
+def get_mlp_regressor_sklearn(**kwargs):
+    """
+    Gets MLP Regressor from sklearn.
+
+    Parameters:
+        **kwargs(dict): The arguments passed to the MLP Regressor.
+
+    Returns:
+        model(MLPRegressor): The optimizer with the parameters.
+    """
+
+    model = MLPRegressor(**kwargs)
+
+    logging.debug(f"Created MLP Regressor model from sklearn")
+
+    return model

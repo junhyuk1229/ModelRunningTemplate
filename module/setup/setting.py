@@ -1,3 +1,4 @@
+import argparse
 import json
 import logging
 import numpy as np
@@ -7,7 +8,7 @@ import random
 import torch
 
 
-def get_setting(setting_file_path: str) -> dict:
+def get_json_setting(setting_file_path: str) -> dict:
     """
     Returns the setting.json file as a dictionary.
 
@@ -24,7 +25,7 @@ def get_setting(setting_file_path: str) -> dict:
     with open(os.path.join(setting_file_path, SETTING_FILE)) as f:
         settings = json.load(f)
 
-    logging.debug("Loaded All Settings")
+    logging.debug("Loaded All Settings from JSON File")
 
     return settings
 
@@ -65,7 +66,7 @@ def seed_program(seed: int) -> None:
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
-    logging.debug("Seeded all data")
+    logging.debug("Set all seeds")
 
 
 def create_logger(
@@ -138,3 +139,39 @@ def get_unprocessed_data(
     logging.debug("Loaded test data")
 
     return u_train_data, u_test_data
+
+
+def get_argparse_settings() -> argparse.Namespace:
+    """
+    Get settings from argparse
+
+    Returns:
+        args(argparse.Namespace): A namespace with all the settings in args.
+    """
+
+    parser = argparse.ArgumentParser(description="Describe the program")
+
+    parser.add_argument(
+        "-lr",
+        "--learn_rate",
+        help="learn rate of the optimizer",
+        type=float,
+        default=0.01,
+    )
+    parser.add_argument(
+        "-ll",
+        "--log_level",
+        help="Sets the level of logging",
+        type=int,
+        choices=[1, 2, 3, 4, 5],
+        default=3,
+    )
+
+    args = parser.parse_args()
+
+    logging.debug(f"Set learn_rate to {args.learn_rate}")
+    logging.debug(f"Set logging to {args.log_level}")
+
+    logging.debug(f"Loaded All Settings from Parseargs")
+
+    return args
