@@ -3,6 +3,7 @@ __pycache__
 /.git/
 
 /data/
+/test/
 
 /log
 /model
