@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -21,7 +22,7 @@ def run_train_torch(
         dataloader(DataLoader): Dataloader with data.
     """
 
-    for _ in range(epoch):
+    for e in range(epoch):
         for x, y in dataloader:
             y_hat = model(x)
             loss = loss_fn(y_hat, y)
@@ -29,7 +30,7 @@ def run_train_torch(
             optimizer.step()
             optimizer.zero_grad()
 
-        print(loss.detach())
+        logging.info(f"epoch: {e}\tloss: {loss.detach()}")
 
     return
 
@@ -51,6 +52,8 @@ def run_train_sklearn(model, x, y) -> float:
 
     acc = model.score(x, y)
 
+    logging.debug("Trained model using sklearn")
+
     return acc
 
 
@@ -68,4 +71,26 @@ def run_test_sklearn(model, x) -> np.ndarray:
 
     y_hat = model.predict(x)
 
+    logging.debug("Predicted output using sklearn")
+
     return y_hat
+
+
+class EarlyStopper:
+    def __init__(self, patience: int = 5, valid_delta: float = 0):
+        self.patience = patience
+        self.valid_delta = valid_delta
+        self.saved_loss = np.inf
+        self.counter = 0
+
+    def early_stop(self, valid_loss) -> bool:
+        if self.saved_loss > valid_loss:
+            self.saved_loss = valid_loss
+            self.counter = 0
+            return False
+        elif self.saved_loss < valid_loss - self.valid_delta:
+            self.counter += 1
+            if self.counter > self.patience:
+                return True
+        else:
+            return False

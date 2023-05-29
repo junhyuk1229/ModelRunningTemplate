@@ -5,7 +5,7 @@ from model import *
 from run import *
 
 
-def main():
+def main() -> None:
     """
     Basic example of using sklearn to train and test model
     """
@@ -32,7 +32,7 @@ def main():
 
     print(f"{test_y_hat}\n")
 
-    pass
+    return
 
 
 if __name__ == "__main__":

@@ -38,6 +38,8 @@ def get_basic_dataset(x: torch.Tensor, y: torch.Tensor) -> BasicDataset:
     # Get basic dataset
     basic_dataset = BasicDataset(x, y)
 
+    logging.debug("Created BasicDataset")
+
     return basic_dataset
 
 
@@ -54,6 +56,8 @@ def get_basic_dataloader(dataset: Dataset, batch_size: int) -> DataLoader:
 
     # Get basic dataloader
     dataloader = DataLoader(dataset, batch_size=batch_size)
+
+    logging.debug("Created DataLoader")
 
     return dataloader
 
